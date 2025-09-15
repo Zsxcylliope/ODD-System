@@ -1,6 +1,8 @@
 import { View, Text, StyleSheet,Image, TouchableOpacity, TextInput } from 'react-native'
 import React from 'react'
 import {useRouter} from "expo-router";
+import { Link } from "expo-router";
+
 
 const signup = () => {
     const router = useRouter();
@@ -13,10 +15,11 @@ const signup = () => {
                 style={style.arrow}/> 
             </TouchableOpacity>
             <Text style={style.signup}>Sign up</Text>
-            <Text style={style.description}>Already have an account?  
-                <TouchableOpacity onPress={()=>router.push('/login')}>
-                <Text style={style.loginLink}> Login</Text></TouchableOpacity> 
+            <Text style={style.description}>
+                Already have an account?
+                <Link href="/login" style={style.loginLink}> Login</Link>
             </Text>
+
             <View style={style.boxes}>
                 <View style={style.inputContainer} >
                     <Text style={style.credentials}>Full Name</Text>
@@ -123,6 +126,7 @@ const style=StyleSheet.create({
         maxWidth:300,
         borderRadius:10,
         marginTop:10,
+        paddingLeft:10,
     },
     register:{
         backgroundColor:'red', //color button sa register
