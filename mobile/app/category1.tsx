@@ -14,7 +14,6 @@ const login = () => {
             style={style.logo}/>
             </TouchableOpacity>
         </View>
-        
     </View>
   )
 }
