@@ -1,9 +1,18 @@
 import { View, Text, StyleSheet,Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons'  // ✅ for icons
 
 const Dashboard = () => {
   const router = useRouter();
+
+  const navItems = [
+    { name: "Home", icon: "home-outline", route: "/dashboard" },
+    { name: "Search", icon: "search-outline", route: "/search" },
+    { name: "Cart", icon: "cart-outline", route: "/cart" },
+    { name: "Transaction", icon: "receipt-outline", route: "/transaction" },
+    { name: "Profile", icon: "person-outline", route: "/profile" },
+  ];
 
   return (
     <View style={{ flex: 1 }}>
@@ -19,49 +28,53 @@ const Dashboard = () => {
                 <View style={style.category}>
                     <TouchableOpacity onPress={() => router.push('/category1')}>
                     <View>
-                        <Image source={require('../assets/images/logo-white.png')} style={style.categoryimg}/>
+                        <Image source={require('../assets/images/Pain-Reliever.png')} style={style.categoryimg}/>
                     </View>   
                     <View style={style.categorytextContainer}>
-                        <Text style={style.categorytext}>Category 1</Text>
+                        <Text style={style.categorytext}>Pain Reliever</Text>
                     </View>
                     </TouchableOpacity>
                 </View>
 
                 <View style={style.category}>
                     <TouchableOpacity onPress={() => router.push('/category1')}>
-                    <Image source={require('../assets/images/logo-white.png')} style={style.categoryimg}/>
+                    <Image source={require('../assets/images/Cough,Cold,Flu.png')} style={style.categoryimg}/>
                     <View style={style.categorytextContainer}>
-                        <Text style={style.categorytext}>Category 2</Text>
+                        <Text style={style.categorytext}>Cough, Cold, Flu</Text>
                     </View>
                     </TouchableOpacity>
                 </View>
 
                 <View style={style.category}>
                     <TouchableOpacity onPress={() => router.push('/category1')}>
-                    <Image source={require('../assets/images/logo-white.png')} style={style.categoryimg}/>
+                    <Image source={require('../assets/images/Vitamins.png')} style={style.categoryimg}/>
                     <View style={style.categorytextContainer}>
-                        <Text style={style.categorytext}>Category 3</Text>
+                        <Text style={style.categorytext}>Vitamins</Text>
                     </View>
                     </TouchableOpacity>
                 </View>
 
                 <View style={style.category}>
                     <TouchableOpacity onPress={() => router.push('/category1')}>
-                    <Image source={require('../assets/images/logo-white.png')} style={style.categoryimg}/>
+                    <Image source={require('../assets/images/Allergy-Reliever.png')} style={style.categoryimg}/>
                     <View style={style.categorytextContainer}>
-                        <Text style={style.categorytext}>Category 4</Text>
+                        <Text style={style.categorytext}>Allergy Reliever</Text>
                     </View>
                     </TouchableOpacity>
                 </View>
             </View>
         </View>
         {/* Bottom Navigation */}
-        <View style={style.navigation}>
-            {["Home", "Search", "Market", "History", "Profile"].map((item) => (
-            <TouchableOpacity key={item} style={style.navItem}>
-                <Text style={style.navText}>{item}</Text>
+         <View style={style.navigation}>
+          {navItems.map((item) => (
+            <TouchableOpacity 
+              key={item.name} 
+              style={style.navItem} 
+              onPress={() => router.push(item.route)}
+            >
+              <Ionicons name={item.icon} size={28} color="blue" />
             </TouchableOpacity>
-            ))}
+          ))}
         </View>
     </View>
   )
@@ -76,10 +89,10 @@ const style = StyleSheet.create({
     maxHeight: 300, 
   },
   logo:{
-        maxHeight:200,
-        maxWidth:200,
-        resizeMode:'contain',
-    },
+    maxHeight:200,
+    maxWidth:200,
+    resizeMode:'contain',
+  },
   logout: {
     fontSize: 16,
     marginTop: 20,
@@ -97,23 +110,27 @@ const style = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-around", 
     paddingHorizontal: 10,
-    },
-   category: {
-        backgroundColor: "#E0E0E0",
-        width: "43%",     // 👈 ensures 2 columns
-        height: 170,
-        marginBottom: 25,
-        justifyContent: "center",
-        borderRadius:10,
-        borderBlockColor:"#000000",
-        borderWidth:1,
-        overflow:'hidden',
-     },
-   categoryimg: {
+    paddingTop:10,
+  },
+    category: {
+    backgroundColor: "#E0E0E0",
+    width: "43%",     
+    height: 170,
+    marginBottom: 25,
+    justifyContent: "center",
+    borderRadius:10,
+    overflow:'hidden',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,   // Android shadow
+  },
+  categoryimg: {
     width: 80,
     height: 100,
-    resizeMode: "contain",
-    alignSelf: "center",
+    resizeMode: "cover", //contain, cover, stretch, repeat, center
+    alignSelf: "center", //ma center ang img lng dili ma apil ang text
     marginTop: 15,
    },
    categorytextContainer: {
@@ -133,22 +150,19 @@ const style = StyleSheet.create({
     },
   navigation: {
     backgroundColor: "#ffffff",
-    height: 120,
+    height: 80,
     width: '100%',
     flexDirection: "row",
     justifyContent: "space-around",
+    alignItems: "center",
     position: 'absolute',
     bottom: 0,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd"
   },
   navItem: {
-    padding: 10,
-    marginTop: 10,
+    paddingBottom: 20
   },
-  navText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "black",
-  }
 })
 
 export default Dashboard
