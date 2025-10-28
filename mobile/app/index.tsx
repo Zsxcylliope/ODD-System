@@ -48,7 +48,7 @@ const style= StyleSheet.create({
     resizeMode:'contain',
   },
   login:{
-    backgroundColor:'#ff0900',
+    backgroundColor:'#EE002D',
     width:300,
     height:50,
     borderRadius:10,

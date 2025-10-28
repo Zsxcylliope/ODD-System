@@ -6,11 +6,14 @@ import { Link } from "expo-router";
 
 const login = () => {
     const router = useRouter();
+    const handleLogin = () =>{
+        router.replace("/dashboard")
+    };
 
   return (
     <View style={style.container}>
         <View style={style.logoContainer}>
-            <TouchableOpacity onPress={()=>router.push('/')}>
+            <TouchableOpacity onPress={()=>router.replace('/')}>
             <Image source={require('../assets/images/logo-white.png')} 
             style={style.logo}/>
             </TouchableOpacity>
@@ -24,13 +27,13 @@ const login = () => {
             </View>
             <View style={style.inputContainer} >
                 <Text style={style.credentials}>Email</Text>
-                <View>
+                <View style={style.credentialContainer}>
                     <TextInput style={style.input} placeholder='Enter your email' />
                 </View>
             </View>
             <View style={style.inputContainer}>
                 <Text style={style.credentials}>Password</Text>
-                <View>
+                <View style={style.credentialContainer}>
                     <TextInput style={style.input} placeholder='Enter your password' />
                 </View>
             </View>
@@ -38,7 +41,7 @@ const login = () => {
                 <Text style={style.fpass}>Forgot Password?</Text>
             </View>
             <View style={style.inputContainer} >
-                <TouchableOpacity onPress={()=>router.push('/dashboard')}>    
+                <TouchableOpacity onPress={handleLogin}>    
                     <View style={style.login}>
                         <Text style={style.loginbox}>Login</Text>
                     </View>
@@ -97,6 +100,9 @@ const style= StyleSheet.create({
         fontWeight:'bold',
         fontSize:12,
     },
+    credentialContainer:{
+
+    },
     input:{
         borderWidth:1,
         borderColor:'grey',
@@ -104,6 +110,7 @@ const style= StyleSheet.create({
         borderRadius:10,
         marginTop:10,
         paddingLeft:10,
+        height:40.
     },
     fpass:{
         textAlign:'right',
@@ -112,7 +119,7 @@ const style= StyleSheet.create({
         paddingRight:20,
     },
     login:{
-        backgroundColor:'red', //button color nis login
+        backgroundColor:'#EE002D', //button color nis login
         width:300,
         height:50,
         borderRadius:10,

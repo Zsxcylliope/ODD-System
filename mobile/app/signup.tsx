@@ -5,6 +5,10 @@ import {useRouter, Link} from "expo-router";
 
 const signup = () => {
     const router = useRouter();
+    const handleSignUp= () =>{
+        router.replace("/dashboard")
+    };
+
   return (
     <View style={style.container}>
         <View style={style.card}>
@@ -16,8 +20,8 @@ const signup = () => {
             <Text style={style.signup}>Sign up</Text>
             <Text style={style.description}>
                 Already have an account?
-                <Link href="/login" style={style.loginLink}> Login</Link>
-            </Text>
+                <Link href="/login" style={style.loginLink}> Login</Link>  
+            </Text> 
 
             <View style={style.boxes}>
                 <View style={style.inputContainer} >
@@ -53,14 +57,14 @@ const signup = () => {
             </View>
             
             <View style={style.inputContainer} >
-                <TouchableOpacity onPress={()=>router.push('/dashboard')}>   
+                <TouchableOpacity onPress={handleSignUp}>   
                     <View style={style.register}>
                         <Text style={style.registertext}>Register</Text>
                     </View>
                 </TouchableOpacity>
             </View>
             <View>
-                <Text>  </Text>
+                <Text> </Text>
             </View>
         </View>
     </View>
@@ -107,7 +111,6 @@ const style=StyleSheet.create({
         color:'grey',
         marginLeft:20,
     },
-    
     boxes:{
         marginTop:20, //from name to confirm password
     },
@@ -128,7 +131,7 @@ const style=StyleSheet.create({
         paddingLeft:10,
     },
     register:{
-        backgroundColor:'red', //color button sa register
+        backgroundColor:'#EE002D', //color button sa register
         width:300,
         height:50,
         borderRadius:10,

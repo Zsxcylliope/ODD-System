@@ -27,14 +27,14 @@ const search = () => {
         <View style={{flex:5}}>
             <View style={style.main}>
                 <Text style={style.placeholder}> THIS IS A PLACEHOLDER</Text>
-                <TouchableOpacity onPress={()=>router.push('/')}>
+                <TouchableOpacity onPress={()=>router.replace('/')}>
                     <Text style={style.logout}>Log Out</Text>
                 </TouchableOpacity>
             </View>
         </View>
         <View style={style.navbar}>
             {navItems.map((item) => (
-            <TouchableOpacity key={item.name} style={style.navItem} onPress={() => router.push(item.route)} >
+            <TouchableOpacity key={item.name} style={style.navItem} onPress={() => router.replace(item.route)} >
                 <Ionicons name={item.icon} size={28} color="blue" />
             </TouchableOpacity>
             ))}
