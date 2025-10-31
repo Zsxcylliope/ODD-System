@@ -6,7 +6,7 @@ import {useRouter, Link} from "expo-router";
 const signup = () => {
     const router = useRouter();
     const handleSignUp= () =>{
-        router.replace("/dashboard")
+        router.replace("/home")
     };
 
   return (
