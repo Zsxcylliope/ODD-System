@@ -27,10 +27,10 @@ const Checkout = () => {
   const total = subtotal + deliveryFee;
 
   const payments = [
-    { id: 'Gcash', label: 'Gcash', icon: require('../assets/images/arrow.png') },
-    { id: 'Paypal', label: 'Paypal', icon: require('../assets/images/arrow.png') },
-    { id: 'GooglePay', label: 'Google pay', icon: require('../assets/images/arrow.png') },
-    { id: 'COD', label: 'Cash on delivery', icon: require('../assets/images/arrow.png') },
+    { id: 'Gcash', label: 'Gcash', icon: require('../assets/images/gcash.jpg') },
+    { id: 'Paypal', label: 'Paypal', icon: require('../assets/images/paypal.png') },
+    { id: 'GooglePay', label: 'Google pay', icon: require('../assets/images/gpay.png') },
+    { id: 'COD', label: 'Cash on delivery', icon: require('../assets/images/wallets.png') },
   ];
 
   return (

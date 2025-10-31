@@ -7,9 +7,15 @@ const Notifications = () => {
   const router = useRouter();
 
   const trackingNumber = [
-    { id: 1, tracking: "123456", time: "1h ago" },
+    { id: 1, tracking: "123-TYU", time: "1h ago" },
     { id: 2, tracking: "KG6-WY", time: "1h ago" },
-    { id: 3, tracking: "2ACBA", time: "1h ago" },
+    { id: 3, tracking: "SAN-O1L", time: "1h ago" },
+    { id: 4, tracking: "GHE-L1N", time: "1h ago" },
+    { id: 5, tracking: "BCV-TY3", time: "1h ago" },
+    { id: 6, tracking: "2AC-ZBA", time: "1h ago" }, 
+    { id: 7, tracking: "GFH-12F", time: "1h ago" },
+    { id: 8, tracking: "KG6-7E", time: "1h ago" },
+    { id: 9, tracking: "3VC-F12", time: "1h ago" },
   ];
 
   return (

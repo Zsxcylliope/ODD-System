@@ -14,28 +14,28 @@ const Home = () => {
   const products = [
     {
       id: 1,
-      image: require("../assets/images/Pain-Reliever.png"),
+      image: require("../assets/images/tiki-tiki.png"),
       name: "Tiki-Tiki Syrup",
       rating: 4,
       price: 246,
     },
     {
       id: 2,
-      image: require("../assets/images/Vitamins.png"),
+      image: require("../assets/images/centrum.png"),
       name: "Centrum",
       rating: 5,
       price: 246,
     },
     {
       id: 3,
-      image: require("../assets/images/Allergy-Reliever.png"),
+      image: require("../assets/images/Biogesic.png"),
       name: "Biogesic",
       rating: 4.5,
       price: 131,
     },
     {
       id: 4,
-      image: require("../assets/images/Cough,Cold,Flu.png"),
+      image: require("../assets/images/Rexidol.png"),
       name: "Rexidol",
       rating: 2,
       price: 320,
@@ -173,7 +173,7 @@ const style = StyleSheet.create({
     height: 60,
   },
   categorytext: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "bold",
     color: "black",
     textAlign: "left",
@@ -189,7 +189,7 @@ const style = StyleSheet.create({
   },
   gridItem: {
     backgroundColor: "#E0E0E0",
-    width: "43%",
+    width: "45%",
     height: 260,
     marginBottom: 25,
     justifyContent: "center",
