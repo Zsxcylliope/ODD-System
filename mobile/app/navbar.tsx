@@ -9,7 +9,7 @@ const Navbar = () => {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const navItems = [
-    { name: "Home", icon: "home-outline", activeIcon: "home", route: "/dashboard" },
+    { name: "Home", icon: "home-outline", activeIcon: "home", route: "/home" },
     { name: "Search", icon: "search-outline", activeIcon: "search", route: "/search" },
     { name: "Cart", icon: "cart-outline", activeIcon: "cart", route: "/cart" },
     { name: "Transaction", icon: "receipt-outline", activeIcon: "receipt", route: "/transaction" },

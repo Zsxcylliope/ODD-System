@@ -76,10 +76,7 @@ const PainReliever = () => {
         <View style={styles.header}>
             <View style={styles.headertop}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <Image 
-                    source={require('../assets/images/arrow.png')} 
-                    style={styles.arrow} 
-                    />
+                    <Ionicons name="chevron-back-outline" size={20} color="white"/>
                 </TouchableOpacity>
                 <Text style={styles.headertext}> Pain Reliever </Text>
             </View>
@@ -111,6 +108,7 @@ const PainReliever = () => {
             <Text style={styles.noResults}>No products found</Text>
           )}
         </View>
+        <View style={{ height: 80 }} /> {/* Spacer for Navbar */}
       </ScrollView>
       <Navbar />
     </SafeAreaView>
@@ -131,12 +129,6 @@ const styles = StyleSheet.create({
     paddingLeft:15,
     marginTop:40,
     marginBottom:20,
-  },
-  arrow: {
-    flex:1,
-    width:15,
-    height:15,
-    resizeMode:'contain',      
   },
   headertext: {
     flex:2,
