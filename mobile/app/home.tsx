@@ -5,18 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import ProductCard from "./productcard";
 import Navbar from "./navbar"; 
 
-const Dashboard = () => {
+const Home = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [hovered, setHovered] = useState<string | null>(null);
-
-  const navItems = [
-    { name: "Home", icon: "home-outline", activeIcon: "home", route: "/dashboard" },
-    { name: "Search", icon: "search-outline", activeIcon: "search", route: "/search" },
-    { name: "Cart", icon: "cart-outline", activeIcon: "cart", route: "/cart" },
-    { name: "Transaction", icon: "receipt-outline", activeIcon: "receipt", route: "/transaction" },
-    { name: "Profile", icon: "person-outline", activeIcon: "person", route: "/profile" },
-  ];
 
   // 🛍️ Example products for your grid
   const products = [
@@ -55,7 +47,7 @@ const Dashboard = () => {
       <ScrollView style={style.scroll}>
         {/* HEADER */}
         <View style={style.container}>
-          <TouchableOpacity onPress={() => router.replace('/')} style={style.notification}>
+          <TouchableOpacity onPress={() => router.push('/notifications')} style={style.notification}>
             <Ionicons name="notifications-outline" color={'#f3f4f5'} size={35} />
           </TouchableOpacity>
           <Image source={require('../assets/images/logo-white.png')} style={style.logo} />
@@ -122,8 +114,8 @@ const Dashboard = () => {
 const style = StyleSheet.create({
   notification: {
     alignSelf: 'flex-end',
-    paddingLeft: 10,
-    marginTop: 20,
+    paddingRight: 20,
+    marginTop: 50,
     marginBottom: 20,
   },
   container: {
@@ -211,4 +203,4 @@ const style = StyleSheet.create({
   },
 });
 
-export default Dashboard;
+export default Home;

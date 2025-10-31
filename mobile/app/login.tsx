@@ -7,7 +7,7 @@ import { Link } from "expo-router";
 const login = () => {
     const router = useRouter();
     const handleLogin = () =>{
-        router.replace("/dashboard")
+        router.replace("/home")
     };
 
   return (
@@ -38,7 +38,7 @@ const login = () => {
                 </View>
             </View>
             <View>
-                <Text style={style.fpass}>Forgot Password?</Text>
+                <Link href="/forgotpassword" style={style.fpass}>Forgot Password?</Link>
             </View>
             <View style={style.inputContainer} >
                 <TouchableOpacity onPress={handleLogin}>    

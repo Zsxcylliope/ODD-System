@@ -1,4 +1,4 @@
-import {View,TextStyleSheet,Image,TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import {View,Text, StyleSheet,Image,TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from "expo-router";
@@ -7,6 +7,10 @@ import Navbar from "./navbar";
 
 const Cart = () => {
   const router = useRouter();
+  
+  const handleCheckout = () =>{
+        router.replace("/checkout")
+    };
 
   // 🧾 Product list
   const products = [
@@ -111,14 +115,17 @@ const Cart = () => {
 
         {/* Select All */}
         <View style={styles.selectAllContainer}>
+          <View style={styles.selectAll}>
           <Checkbox 
+            style={styles.checkbox}
             value={selectAll} 
             onValueChange={handleSelectAll} 
-            color={selectAll ? "#5387ED" : undefined}
+            color={selectAll ? "#A02334" : undefined}
           />
           <Text style={styles.selectAllText}>Select All</Text>
+          </View>
           <TouchableOpacity>
-            <Ionicons name="trash-outline" size={22} color="black" />
+            <Ionicons name="trash-outline" size={22} color="#A02334" />
           </TouchableOpacity>
         </View>
 
@@ -128,7 +135,7 @@ const Cart = () => {
             <Checkbox
               value={selectedItems.includes(item.id)}
               onValueChange={(value) => handleSelectItem(item.id, value)}
-              color={selectedItems.includes(item.id) ? "#5387ED" : undefined}
+              color={selectedItems.includes(item.id) ? "#A02334" : undefined}
             />
 
             <Image source={item.image} style={styles.itemImage} />
@@ -136,24 +143,28 @@ const Cart = () => {
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>{item.name}</Text>
               <Text style={styles.itemStock}>{item.stock}</Text>
-              <Text style={styles.itemPrice}>₱{item.price}</Text>
+              <View style={styles.priceQuantity}>
+                <Text style={styles.itemPrice}>₱{item.price}</Text>
 
-              <View style={styles.quantityContainer}>
-                <TouchableOpacity onPress={() => handleQuantityChange(item.id, -1)}>
-                  <Text style={styles.quantityButton}>−</Text>
-                </TouchableOpacity>
-                <Text style={styles.quantityText}>{quantities[item.id]}</Text>
-                <TouchableOpacity onPress={() => handleQuantityChange(item.id, 1)}>
-                  <Text style={styles.quantityButton}>＋</Text>
-                </TouchableOpacity>
+                <View style={styles.quantityContainer}>
+                  <TouchableOpacity onPress={() => handleQuantityChange(item.id, -1)}>
+                    <Text style={styles.quantityButton}>−</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.quantityText}>{quantities[item.id]}</Text>
+                  <TouchableOpacity onPress={() => handleQuantityChange(item.id, 1)}>
+                    <Text style={styles.quantityButton}>＋</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
-        ))}
+        )
+      )
+      }
       </ScrollView>
 
       {/* Checkout */}
-      <TouchableOpacity style={styles.checkoutButton}>
+      <TouchableOpacity  onPress={handleCheckout} style={styles.checkoutButton}>
         <Text style={styles.checkoutText}>Checkout ₱{total.toFixed(2)}</Text>
       </TouchableOpacity>
 
@@ -163,6 +174,13 @@ const Cart = () => {
 };
 
 const styles = StyleSheet.create({
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderColor: "#A02334",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   header: {
     justifyContent: "center",
     alignItems: "center",
@@ -178,12 +196,18 @@ const styles = StyleSheet.create({
   selectAllContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyItems:"center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     marginTop: 10,
   },
+  selectAll:{
+    flexDirection: "row",
+    alignItems: "center",
+  },
   selectAllText: {
     fontSize: 16,
+    marginLeft: 10,
   },
   cartItem: {
     flexDirection: "row",
@@ -193,6 +217,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 15,
     marginVertical: 8,
+    borderBottom: 5,
+    shadowColor:"#000",
+    shadowOffset:{width:0, height:1},
+    shadowOpacity: 0.20,
+    shadowRadius:2,
   },
   itemImage: {
     width: 60,
@@ -209,11 +238,16 @@ const styles = StyleSheet.create({
   },
   itemStock: {
     fontSize: 12,
-    color: "green",
+    color: "#A02334",
+  },
+  priceQuantity:{
+    flexDirection:"row",
+    justifyContent: "space-between"
   },
   itemPrice: {
     fontSize: 14,
     marginTop: 5,
+    fontWeight:"bold",
   },
   quantityContainer: {
     flexDirection: "row",
@@ -221,20 +255,27 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   quantityButton: {
-    fontSize: 20,
-    width: 30,
+    fontSize: 14,
+    width: 21,
     textAlign: "center",
+    borderRadius:15,
+    borderWidth:2,
+    borderColor:"#A02334",
+    color:"#FFF",
+    backgroundColor: "#A02334",
   },
   quantityText: {
     fontSize: 16,
+    backgroundColor:"#F0F3F6",
     marginHorizontal: 10,
   },
   checkoutButton: {
-    backgroundColor: "#5387ED",
+    backgroundColor: "#DF1C41",
     margin: 15,
     borderRadius: 10,
     paddingVertical: 15,
     alignItems: "center",
+    marginBottom: 100,
   },
   checkoutText: {
     color: "#fff",
