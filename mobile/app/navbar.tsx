@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -8,18 +8,28 @@ const Navbar = () => {
   const pathname = usePathname();
   const [hovered, setHovered] = useState<string | null>(null);
 
-  const navItems = [
+  const navItems: Array<{
+    name: string;
+    icon: string;
+    activeIcon: string;
+    route: string;
+  }> = [
     { name: "Home", icon: "home-outline", activeIcon: "home", route: "/home" },
     { name: "Search", icon: "search-outline", activeIcon: "search", route: "/search" },
     { name: "Cart", icon: "cart-outline", activeIcon: "cart", route: "/cart" },
-    { name: "Transaction", icon: "receipt-outline", activeIcon: "receipt", route: "/transaction" },
+    { name: "Transaction", icon: "reader-outline", activeIcon: "reader", route: "/moreceive" },
     { name: "Profile", icon: "person-outline", activeIcon: "person", route: "/profile" },
   ];
 
   return (
     <View style={styles.navigation}>
       {navItems.map((item) => {
-        const isActive = pathname === item.route;
+        // ✅ Make Transaction icon active for all transaction-related pages
+        const transactionRoutes = ["/moreceive", "/mocompleted", "/mocancelled"];
+        const isTransactionPage = transactionRoutes.includes(pathname);
+        const isActive =
+          item.name === "Transaction" ? isTransactionPage : pathname === item.route;
+
         const isHovered = hovered === item.name;
 
         return (
@@ -39,9 +49,6 @@ const Navbar = () => {
               size={28}
               color={isActive ? "#A02334" : isHovered ? "#DF1C41" : "#888"}
             />
-            <Text style={[styles.navText, { color: isActive ? "#A02334" : "#888" }]}>
-              {item.name}
-            </Text>
           </TouchableOpacity>
         );
       })}
@@ -66,10 +73,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
-  },
-  navText: {
-    fontSize: 12,
-    marginTop: 4,
   },
   activeNavItem: {
     borderTopWidth: 2,
