@@ -12,7 +12,7 @@ const Profile = () => {
       {/* Header Section */}
       <View style={styles.header}>
         <Image 
-          source={require('../assets/images/centrum.png')} 
+          source={require('../assets/images/miming.jpg')} 
           style={styles.profileImage} 
         />
         <View style={styles.userInfo}>
