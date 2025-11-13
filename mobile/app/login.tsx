@@ -3,7 +3,6 @@ import React from 'react'
 import {useRouter} from "expo-router";
 import { Link } from "expo-router";
 
-
 const login = () => {
     const router = useRouter();
     const handleLogin = () =>{

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ProductCard from "./productcard";
 import Navbar from "./navbar"; 
 
+
 const Home = () => {
   const router = useRouter();
   const pathname = usePathname();

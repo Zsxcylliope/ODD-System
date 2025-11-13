@@ -4,6 +4,7 @@ import {useRouter} from "expo-router";
 
 const index = () => {
   const router = useRouter();
+  
   return (
     <View style={style.container}>
       <View style={style.logoContainer}>

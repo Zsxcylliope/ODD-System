@@ -9,7 +9,7 @@ const Cart = () => {
   const router = useRouter();
   
   const handleCheckout = () =>{
-        router.replace("/checkout")
+        router.push("/checkout")
     };
 
   // 🧾 Product list

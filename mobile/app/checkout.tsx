@@ -9,7 +9,9 @@ const Checkout = () => {
   const handleAddress = () =>{
     router.push("/addressselection")
   };
-
+  const handleConfirmOrder = () =>{
+    router.replace ("/moreceive")
+  };
 
   const products = [
     {
@@ -106,7 +108,7 @@ const Checkout = () => {
         </View>
 
         {/* CONFIRM BUTTON */}
-        <TouchableOpacity style={styles.confirmButton}>
+        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmOrder}>
           <Text style={styles.confirmText}>Confirm Order</Text>
         </TouchableOpacity>
       </ScrollView>

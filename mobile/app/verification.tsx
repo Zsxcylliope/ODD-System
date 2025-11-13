@@ -1,8 +1,6 @@
 import { View, Text, StyleSheet,Image, TouchableOpacity,TextInput } from 'react-native'
 import React from 'react'
 import {useRouter} from "expo-router";
-import { Link } from "expo-router";
-
 
 const Verification = () => {
     const router = useRouter();
