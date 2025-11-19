@@ -1,0 +1,12 @@
+import moongoose from "mongoose";
+
+export const connectDB = async (url) => {
+    try {
+        const conn = await moongoose.connect(process.env.MONGO_URI);
+        console.log(`Database connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error("Error connecting to database", error);
+        process.exit(1);
+}
+};
+export default connectDB;
