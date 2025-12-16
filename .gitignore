@@ -1,0 +1,16 @@
+# Environment variables
+.env
+backend/.env
+
+# Node dependencies
+node_modules/
+
+# Expo / React Native
+.expo/
+
+# IDE
+.idea/
+
+# Build outputs
+dist/
+build/
