@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        lowercase: true,
+        trim: true,
     },
     phone: {
         type: String,
@@ -23,13 +25,20 @@ const userSchema = new mongoose.Schema({
     profileImage: {
         type: String,
         default: "",
+    },
+    resetCode: {
+        type: String,
+    },
+    resetCodeExpire: {
+        type: Date,
     }
+
 }, { timestamps: true });
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
-    
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();

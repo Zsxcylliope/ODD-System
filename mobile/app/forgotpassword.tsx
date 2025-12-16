@@ -1,17 +1,38 @@
-import { View, Text, StyleSheet,Image, TouchableOpacity,TextInput } from 'react-native'
-import React from 'react'
-import {useRouter} from "expo-router";
+import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert } from 'react-native'
+import React, { useState } from 'react'
+import { useRouter } from "expo-router";
 import { Link } from "expo-router";
+import api from "../lib/api";
 
 
-const ForgotPassword = () => {
-    const router = useRouter();
-    const handleSend = () =>{
-        router.replace("/verification")
-    };
-    const handleSignUp = () =>{
-        router.replace("/signup")
-    };
+
+    const ForgotPassword = () => {
+        const router = useRouter();
+
+        const [email, setEmail] = useState("");
+
+        const handleSend = async () => {
+            if (!email) {
+                Alert.alert("Error", "Please enter your email");
+                return;
+            }
+
+            try {
+                const res = await api.post("/auth/forgot-password", { email });
+
+                Alert.alert("Success", res.data.message);
+
+                router.replace({
+                pathname: "/verification",
+                params: { email }, // REQUIRED
+                });
+            } catch (err: any) {
+                Alert.alert(
+                "Error",
+                err.response?.data?.message || "Network error"
+    );
+  }
+};
 
    return (
       <View style={style.container}>
@@ -28,7 +49,12 @@ const ForgotPassword = () => {
                   <View style={style.inputContainer} >
                       <Text style={style.credentials}>Email</Text>
                       <View>
-                          <TextInput style={style.input} placeholder='Enter your email' />
+                          <TextInput style={style.input}
+                          placeholder="Enter your email"
+                          value={email}
+                          onChangeText={setEmail}
+                          autoCapitalize="none"
+                          />
                       </View>
                   </View>
               </View>
@@ -50,7 +76,7 @@ const ForgotPassword = () => {
                     <Text style={style.dyhaccount}>
                        Do you have an account?
                     </Text>
-                     <TouchableOpacity onPress={handleSignUp}>   
+                     <TouchableOpacity onPress={() => router.replace("/signup")}>   
                         <View style={style.signup}>
                             <Text style={style.signuptext}>Sign up</Text>
                         </View>
@@ -170,4 +196,4 @@ const ForgotPassword = () => {
   
   })
 
-export default ForgotPassword
+export default ForgotPassword;

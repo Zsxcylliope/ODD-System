@@ -1,148 +1,217 @@
-import { View, Text, StyleSheet,Image, TouchableOpacity, TextInput } from 'react-native'
-import React from 'react'
-import {useRouter, Link} from "expo-router";
+import React, { useState } from 'react'
+import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert } from 'react-native'
+import { useRouter, Link } from "expo-router";
+import api from "../lib/api";
 
-
-const signup = () => {
+const Signup = () => {
     const router = useRouter();
-    const handleSignUp= () =>{
-        router.replace("/home")
+
+    // ======================
+    // FORM STATE
+    // ======================
+    const [fullname, setFullname] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    // ======================
+    // REGISTER HANDLER
+    // ======================
+    const handleSignUp = async () => {
+        if (!fullname || !email || !phone || !password || !confirmPassword) {
+            Alert.alert("Error", "All fields are required");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert("Error", "Passwords do not match");
+            return;
+        }
+
+        try {
+            const res = await api.post("/auth/register", {
+                fullname,
+                email: email.toLowerCase(),
+                phone,
+                password,
+                confirmPassword,
+            });
+
+            Alert.alert("Success", res.data.message);
+            router.replace("/login"); // go to login after successful signup
+        } catch (err: any) {
+            Alert.alert(
+                "Registration failed",
+                err.response?.data?.message || "Network error"
+            );
+        }
     };
 
-  return (
-    <View style={style.container}>
-        <View style={style.card}>
-            <TouchableOpacity onPress={()=>router.back()}>
-                <Image 
-                source={require('../assets/images/arrow.png')}   //location sa arrow button
-                style={style.arrow}/> 
-            </TouchableOpacity>
-            <Text style={style.signup}>Sign up</Text>
-            <Text style={style.description}>
-                Already have an account?
-                <Link href="/login" style={style.loginLink}> Login</Link>  
-            </Text> 
-
-            <View style={style.boxes}>
-                <View style={style.inputContainer} >
-                    <Text style={style.credentials}>Full Name</Text>
-                    <View>
-                        <TextInput style={style.input} placeholder='Enter your name' />
-                    </View>
-                </View>
-                <View style={style.inputContainer} >
-                    <Text style={style.credentials}>Email</Text>
-                    <View>
-                        <TextInput style={style.input} placeholder='Enter your email' />
-                    </View>
-                </View>
-                <View style={style.inputContainer} >
-                    <Text style={style.credentials}>Phone Number</Text>
-                    <View>
-                        <TextInput style={style.input} placeholder='Enter your number' />
-                    </View>
-                </View>
-                <View style={style.inputContainer} >
-                    <Text style={style.credentials}>Password</Text>
-                    <View>
-                        <TextInput style={style.input} placeholder='Create your password' />
-                    </View>
-                </View>
-                <View style={style.inputContainer} >
-                    <Text style={style.credentials}>Confirm Password</Text>
-                    <View>
-                        <TextInput style={style.input} placeholder='Confirm your Password' />
-                    </View>
-                </View>
-            </View>
-            
-            <View style={style.inputContainer} >
-                <TouchableOpacity onPress={handleSignUp}>   
-                    <View style={style.register}>
-                        <Text style={style.registertext}>Register</Text>
-                    </View>
+    return (
+        <View style={style.container}>
+            <View style={style.card}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Image 
+                        source={require('../assets/images/arrow.png')}
+                        style={style.arrow}
+                    /> 
                 </TouchableOpacity>
-            </View>
-            <View>
-                <Text> </Text>
+
+                <Text style={style.signup}>Sign up</Text>
+
+                <Text style={style.description}>
+                    Already have an account?
+                    <Link href="/login" style={style.loginLink}> Login</Link>  
+                </Text> 
+
+                <View style={style.boxes}>
+                    <View style={style.inputContainer}>
+                        <Text style={style.credentials}>Full Name</Text>
+                        <TextInput
+                            style={style.input}
+                            placeholder="Enter your name"
+                            value={fullname}
+                            onChangeText={setFullname}
+                        />
+                    </View>
+
+                    <View style={style.inputContainer}>
+                        <Text style={style.credentials}>Email</Text>
+                        <TextInput
+                            style={style.input}
+                            placeholder="Enter your email"
+                            value={email}
+                            onChangeText={setEmail}
+                            autoCapitalize="none"
+                        />
+                    </View>
+
+                    <View style={style.inputContainer}>
+                        <Text style={style.credentials}>Phone Number</Text>
+                        <TextInput
+                            style={style.input}
+                            placeholder="Enter your number"
+                            value={phone}
+                            onChangeText={setPhone}
+                            keyboardType="phone-pad"
+                        />
+                    </View>
+
+                    <View style={style.inputContainer}>
+                        <Text style={style.credentials}>Password</Text>
+                        <TextInput
+                            style={style.input}
+                            placeholder="Create your password"
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                    </View>
+
+                    <View style={style.inputContainer}>
+                        <Text style={style.credentials}>Confirm Password</Text>
+                        <TextInput
+                            style={style.input}
+                            placeholder="Confirm your Password"
+                            secureTextEntry
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                        />
+                    </View>
+                </View>
+
+                <View style={style.inputContainer}>
+                    <TouchableOpacity onPress={handleSignUp}>   
+                        <View style={style.register}>
+                            <Text style={style.registertext}>Register</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
-    </View>
-  )
+    )
 }
 
-const style=StyleSheet.create({
-    container:{
-        backgroundColor:"#5387ED",
-        flex:1,
-        justifyContent:'center',
-        alignItems:'center',
-    },
-    card:{
-        marginTop:-20,
-        paddingLeft:10,
-        width:350,
-        backgroundColor:"white",
-        borderRadius:20,
-        maxHeight:1500,
-    },
-    arrow:{
-        width:15,
-        height:15,
-        resizeMode:'contain',
-        marginTop:30,
-        marginLeft:20,
-    },
-    signup:{
-        fontSize:30,
-        fontWeight:'bold',
-        textAlign:'left',
-        marginLeft:20,
-        marginTop:20,
-    },
-    loginLink:{
-        color:'red',
-        fontWeight:'bold',
-        fontSize:14,
-    },
-    description:{
-        textAlign:'left',
-        marginTop:10,
-        color:'grey',
-        marginLeft:20,
-    },
-    boxes:{
-        marginTop:20, //from name to confirm password
-    },
-    inputContainer:{
-        paddingLeft:20,
-    },
-    credentials:{
-        marginTop:10,
-        fontWeight:'bold',
-        fontSize:14,
-    },
-    input:{
-        borderWidth:1,
-        borderColor:'grey',
-        maxWidth:300,
-        borderRadius:10,
-        marginTop:10,
-        paddingLeft:10,
-    },
-    register:{
-        backgroundColor:'#EE002D', //color button sa register
-        width:300,
-        height:50,
-        borderRadius:10,
-        justifyContent:'center',
-        alignItems:'center',
-        marginTop:20,
-    },
-    registertext:{
-        color:'white',
-    },
+const style = StyleSheet.create({
+  container: {
+    backgroundColor: "#5387ED",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-})
+  card: {
+    width: "90%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: 25,
+  },
 
-export default signup
+  arrow: {
+    width: 16,
+    height: 16,
+    resizeMode: "contain",
+    marginBottom: 10,
+  },
+
+  signup: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+
+  description: {
+    color: "grey",
+    marginBottom: 20,
+  },
+
+  loginLink: {
+    color: "red",
+    fontWeight: "bold",
+  },
+
+  boxes: {
+    marginTop: 5,
+  },
+
+  inputContainer: {
+    marginBottom: 15,
+  },
+
+  credentials: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 5,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 45,
+    width: "100%",
+    backgroundColor: "#fff",
+  },
+
+  register: {
+    backgroundColor: "#EE002D",
+    height: 50,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 15,
+    width: "100%",
+  },
+
+  registertext: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
+
+export default Signup;

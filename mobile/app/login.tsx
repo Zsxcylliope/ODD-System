@@ -1,143 +1,187 @@
-import { View, Text, StyleSheet,Image, TouchableOpacity,TextInput } from 'react-native'
-import React from 'react'
-import {useRouter} from "expo-router";
-import { Link } from "expo-router";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+} from "react-native";
+import { useRouter, Link } from "expo-router";
+import api from "../lib/api";
 
-const login = () => {
-    const router = useRouter();
-    const handleLogin = () =>{
-        router.replace("/home")
-    };
+const Login = () => {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter email and password");
+      return;
+    }
+
+    try {
+      const res = await api.post("/auth/login", {
+        email: email.toLowerCase(),
+        password,
+      });
+
+      Alert.alert("Login successful", `Welcome ${res.data.user.fullname}`);
+      router.replace("/home");
+    } catch (err: any) {
+      Alert.alert(
+        "Login failed",
+        err.response?.data?.message || "Network error"
+      );
+    }
+  };
 
   return (
     <View style={style.container}>
-        <View style={style.logoContainer}>
-            <TouchableOpacity onPress={()=>router.replace('/')}>
-            <Image source={require('../assets/images/logo-white.png')} 
-            style={style.logo}/>
-            </TouchableOpacity>
-        </View>
-        <View style={style.card}>
-            <View>
-                <Text style={style.logintext}>Login</Text>
-            </View>
-            <View>
-                <Text style={style.description}> Enter your email and password to log in</Text>
-            </View>
-            <View style={style.inputContainer} >
-                <Text style={style.credentials}>Email</Text>
-                <View style={style.credentialContainer}>
-                    <TextInput style={style.input} placeholder='Enter your email' />
-                </View>
-            </View>
-            <View style={style.inputContainer}>
-                <Text style={style.credentials}>Password</Text>
-                <View style={style.credentialContainer}>
-                    <TextInput style={style.input} placeholder='Enter your password' />
-                </View>
-            </View>
-            <View>
-                <Link href="/forgotpassword" style={style.fpass}>Forgot Password?</Link>
-            </View>
-            <View style={style.inputContainer} >
-                <TouchableOpacity onPress={handleLogin}>    
-                    <View style={style.login}>
-                        <Text style={style.loginbox}>Login</Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <Text style={style.signup}>
-                Don't have an account?
-                <Link href="/signup" style={style.signupLink}> Sign Up</Link>
-            </Text>
+      {/* LOGO */}
+      <View style={style.logoContainer}>
+        <Image
+          source={require("../assets/images/logo-white.png")}
+          style={style.logo}
+        />
+      </View>
 
+      {/* CARD */}
+      <View style={style.card}>
+        <Text style={style.logintext}>Login</Text>
+        <Text style={style.description}>Enter your credentials</Text>
+
+        <View style={style.inputContainer}>
+          <Text style={style.credentials}>Email</Text>
+          <TextInput
+            style={style.input}
+            placeholder="Enter your email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+          />
         </View>
+
+        <View style={style.inputContainer}>
+          <Text style={style.credentials}>Password</Text>
+          <TextInput
+            style={style.input}
+            placeholder="Enter your password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+        </View>
+
+        <Link href="/forgotpassword" style={style.fpass}>
+          Forgot Password ?
+        </Link>
+
+        <TouchableOpacity onPress={handleLogin}>
+          <View style={style.loginButton}>
+            <Text style={style.loginText}>Log In</Text>
+          </View>
+        </TouchableOpacity>
+
+        <Text style={style.signup}>
+          Don’t have an account?
+          <Link href="/signup" style={style.signupLink}> Sign Up</Link>
+        </Text>
+      </View>
     </View>
-  )
-}
+  );
+};
 
-const style= StyleSheet.create({
-    container:{
-        backgroundColor:"#5387ED",
-        flex:1,
-        alignItems:'center',
-    },
-    logoContainer:{
-        alignSelf:'center',
-        marginTop:100,
-        marginBottom:40,
-    },
-    logo:{
-        maxHeight:200,
-        maxWidth:200,
-        resizeMode:'contain',
-    },
-    card:{
-        backgroundColor:'#fff', //the white bg
-        width:350,
-        height:400,
-        borderRadius:20,
-        paddingTop:10,
-        paddingLeft:10,
-        marginTop:-20,
-    },
-    logintext:{
-        fontSize:30,
-        fontWeight:'bold',
-        textAlign:'center',
-    },
-    description:{
-        textAlign:'center',
-        marginTop:10,
-        color:'grey',
-    },
-    inputContainer:{ 
-        paddingLeft:20, //name og box
-    },
-    credentials:{
-        marginTop:10,
-        fontWeight:'bold',
-        fontSize:12,
-    },
-    credentialContainer:{
+const style = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#5387ED",
+    alignItems: "center",
+  },
 
-    },
-    input:{
-        borderWidth:1,
-        borderColor:'grey',
-        maxWidth:300,
-        borderRadius:10,
-        marginTop:10,
-        paddingLeft:10,
-        height:40.
-    },
-    fpass:{
-        textAlign:'right',
-        color:'blue',
-        marginTop:10,
-        paddingRight:20,
-    },
-    login:{
-        backgroundColor:'#EE002D', //button color nis login
-        width:300,
-        height:50,
-        borderRadius:10,
-        justifyContent:'center',
-        alignItems:'center',
-        marginTop:20,
-    },
-    loginbox:{
-        color:'white',
-    },
-    signup:{
-        textAlign:'center',
-        marginTop:20,
-        color:'grey',
-    },
-    signupLink:{
-    color:'red',
-        fontWeight:'bold',
-    },
+  logoContainer: {
+    marginTop: 80,
+    marginBottom: 20,
+  },
 
-})
-export default login
+  logo: {
+    width: 160,
+    height: 160,
+    resizeMode: "contain",
+  },
+
+  card: {
+    width: 350,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    paddingVertical: 25,
+    paddingHorizontal: 20,
+  },
+
+  logintext: {
+    fontSize: 28,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
+  description: {
+    textAlign: "center",
+    marginTop: 6,
+    marginBottom: 20,
+    color: "grey",
+  },
+
+  inputContainer: {
+    marginBottom: 15,
+  },
+
+  credentials: {
+    fontSize: 12,
+    fontWeight: "bold",
+    marginBottom: 6,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 44, // ✅ FIXED (no dot)
+  },
+
+  fpass: {
+    textAlign: "right",
+    color: "#1E40AF",
+    marginBottom: 20,
+  },
+
+  loginButton: {
+    backgroundColor: "#EE002D",
+    height: 50,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  loginText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  signup: {
+    textAlign: "center",
+    marginTop: 20,
+    color: "grey",
+  },
+
+  signupLink: {
+    color: "red",
+    fontWeight: "bold",
+  },
+});
+
+export default Login;

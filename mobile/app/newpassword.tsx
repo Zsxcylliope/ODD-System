@@ -1,46 +1,90 @@
-import { View, Text, StyleSheet, TouchableOpacity,TextInput } from 'react-native'
-import React from 'react'
-import {useRouter} from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native'
+import React, { useState } from 'react'
+import { useRouter, useLocalSearchParams } from "expo-router";
+import api from "../lib/api";
 
-const newpassword = () => {
+const NewPassword = () => {
     const router = useRouter();
-    const handleSend = () =>{
-        router.replace("/login")
+
+    // get email + code passed from verification screen
+    const { email, code } = useLocalSearchParams<{
+        email: string;
+        code: string;
+    }>();
+
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const handleSend = async () => {
+        if (!password || !confirmPassword) {
+            Alert.alert("Error", "All fields are required");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert("Error", "Passwords do not match");
+            return;
+        }
+
+        try {
+            const res = await api.post("/auth/reset-password", {
+                email,
+                code,
+                password,
+            });
+
+            Alert.alert("Success", res.data.message);
+            router.replace("/login");
+        } catch (err: any) {
+            Alert.alert(
+                "Error",
+                err.response?.data?.message || "Network error"
+            );
+        }
     };
 
-   return (
-      <View style={style.container}>
-          <View style={style.card}>
-              <Text style={style.newpassword}>New Password</Text>
-  
-              <View style={style.boxes}>
-                  <View style={style.inputContainer} >
-                      <Text style={style.credentials}>Enter New Password</Text>
-                      <View>
-                          <TextInput style={style.input} placeholder='At least 8 digits' />
-                      </View>
-                  </View>
-                  <View style={style.inputContainer} >
-                      <Text style={style.credentials}>Confirm Password</Text>
-                      <View>
-                          <TextInput style={style.input} placeholder='********' />
-                      </View>
-                  </View>
-              </View>
-              
-              <View style={style.sendContainer} >
-                  <TouchableOpacity onPress={handleSend}>   
-                      <View style={style.register}>
-                          <Text style={style.registertext}>Send</Text>
-                      </View>
-                  </TouchableOpacity>
-              </View>
+    return (
+        <View style={style.container}>
+            <View style={style.card}>
+                <Text style={style.newpassword}>New Password</Text>
+
+                <View style={style.boxes}>
+                    <View style={style.inputContainer}>
+                        <Text style={style.credentials}>Enter New Password</Text>
+                        <TextInput
+                            style={style.input}
+                            placeholder="At least 8 digits"
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                    </View>
+
+                    <View style={style.inputContainer}>
+                        <Text style={style.credentials}>Confirm Password</Text>
+                        <TextInput
+                            style={style.input}
+                            placeholder="********"
+                            secureTextEntry
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                        />
+                    </View>
+                </View>
+
+                <View style={style.sendContainer}>
+                    <TouchableOpacity onPress={handleSend}>
+                        <View style={style.register}>
+                            <Text style={style.registertext}>Send</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
-    )
-  }
-  
-    const style=StyleSheet.create({
+    );
+};
+
+const style = StyleSheet.create({
     container:{
         backgroundColor:"#5387ED",
         flex:1,
@@ -63,7 +107,7 @@ const newpassword = () => {
         marginTop:20,
     },
     boxes:{
-        marginTop:10, //from name to confirm password
+        marginTop:10,
     },
     inputContainer:{
         paddingLeft:20,
@@ -82,17 +126,13 @@ const newpassword = () => {
         paddingLeft:10,
         height:40,
     },
-    inputContainer:{
-        paddingLeft:20,
-        height:75,
-    },
     sendContainer:{
         paddingLeft:20,
         height:75,
         marginBottom: 20,
     },
     register:{
-        backgroundColor:'#EE002D', //button color nis login
+        backgroundColor:'#EE002D',
         width:300,
         height:50,
         borderRadius:10,
@@ -104,8 +144,6 @@ const newpassword = () => {
     registertext:{
         color:'white',
     },
+});
 
-  
-  })
-
-export default newpassword
+export default NewPassword;
