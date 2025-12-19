@@ -124,45 +124,79 @@ router.post("/login", async (req, res) => {
 ===================================================== */
 router.post("/forgot-password", async (req, res) => {
   try {
-    const emailLower = req.body.email.toLowerCase();
+    const { email } = req.body;
 
-    const user = await User.findOne({ email: emailLower });
-
-    // Prevent email enumeration
-    if (!user) {
-      return res.json({
-        message: "If the email exists, a code was sent.",
+    /* ================= VALIDATION ================= */
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
       });
     }
 
-    const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const emailLower = email.toLowerCase().trim();
+
+    /* ================= USER LOOKUP ================= */
+    const user = await User.findOne({ email: emailLower });
+
+    // Anti-enumeration (security best practice)
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: "If the email exists, a verification code was sent.",
+      });
+    }
+
+    /* ================= CODE GENERATION ================= */
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
 
     const hashedCode = crypto
       .createHash("sha256")
-      .update(resetCode)
+      .update(code)
       .digest("hex");
 
     user.resetCode = hashedCode;
-    user.resetCodeExpire = Date.now() + 10 * 60 * 1000;
+    user.resetCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
     await user.save();
 
-    await transporter.sendMail({
-      from: process.env.EMAIL,
-      to: user.email,
-      subject: "Password Reset Code",
-      html: `
-        <h2>Password Reset</h2>
-        <p>Your verification code is:</p>
-        <h1>${resetCode}</h1>
-        <p>This code expires in 10 minutes.</p>
-      `,
+    /* ================= EMAIL SEND ================= */
+    try {
+      await transporter.sendMail({
+        from: `"ODD System" <${process.env.EMAIL}>`,
+        to: user.email,
+        subject: "Password Reset Code",
+        html: `
+          <h2>Password Reset</h2>
+          <p>Your verification code is:</p>
+          <h1>${code}</h1>
+          <p>This code expires in 10 minutes.</p>
+        `,
+      });
+    } catch (mailError) {
+      console.error("EMAIL SEND FAILED:", mailError);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send email. Please try again later.",
+      });
+    }
+
+    /* ================= SUCCESS ================= */
+    return res.status(200).json({
+      success: true,
+      message: "Verification code sent to your email",
     });
 
-    res.json({ message: "Verification code sent to email" });
-  } catch (err) {
-    res.status(500).json({ message: "Internal Server Error" });
+  } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error",
+    });
   }
 });
+
 
 /* =====================================================
    VERIFY CODE

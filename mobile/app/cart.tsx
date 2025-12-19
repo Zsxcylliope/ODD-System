@@ -1,171 +1,157 @@
-import {View,Text, StyleSheet,Image,TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
-import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  Alert,
+} from "react-native";
+import React from "react";
+import { Ionicons } from "@expo/vector-icons";
+import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
-import Checkbox from 'expo-checkbox';
-import Navbar from "./navbar"; 
+
+import { useCart } from "../lib/CartContext";
+import Navbar from "./navbar";
 
 const Cart = () => {
   const router = useRouter();
-  
-  const handleCheckout = () =>{
-        router.push("/checkout")
-    };
+  const {
+    cart,
+    updateQuantity,
+    toggleSelect,
+    selectAll,
+    unselectAll,
+    removeSelected,
+    total,
+  } = useCart();
 
-  // 🧾 Product list
-  const products = [
-    {
-      id: 1,
-      image: require("../assets/images/centrum.png"),
-      name: "Centrum",
-      price: 246,
-      stock: "In Stock",
-    },
-    {
-      id: 2,
-      image: require("../assets/images/conzace.png"),
-      name: "Conzace",
-      price: 246,
-      stock: "In Stock",
-    },
-    {
-      id: 3,
-      image: require("../assets/images/ceelin-removebg-preview.png"),
-      name: "Ceelin",
-      price: 246,
-      stock: "In Stock",
-    },
-    {
-      id: 4,
-      image: require("../assets/images/immunpro-removebg-preview.png"),
-      name: "ImmunPro",
-      price: 246,
-      stock: "In Stock",
-    },
-    {
-      id: 5,
-      image: require("../assets/images/forti-removebg-preview.png"),
-      name: "Forti-D",
-      price: 246,
-      stock: "In Stock",
-    },
-    {
-      id: 6,
-      image: require("../assets/images/enervon-removebg-preview.png"),
-      name: "Enervon",
-      price: 246,
-      stock: "In Stock",
-    },
-  ];
+  const allSelected =
+    cart.length > 0 && cart.every((item) => item.selected);
 
-  // ✅ State management
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [quantities, setQuantities] = useState<{ [key: number]: number }>(
-    Object.fromEntries(products.map(p => [p.id, 1]))
-  );
-
-  // 📦 Handle select all toggle
-  const handleSelectAll = (value: boolean) => {
-    setSelectAll(value);
-    setSelectedItems(value ? products.map(p => p.id) : []);
+  const handleToggleAll = (value: boolean) => {
+    value ? selectAll() : unselectAll();
   };
 
-  // 🧩 Handle individual item toggle
-  const handleSelectItem = (id: number, value: boolean) => {
-    setSelectedItems(prev => 
-      value ? [...prev, id] : prev.filter(itemId => itemId !== id)
+  const handleDeleteSelected = () => {
+    if (!cart.some((item) => item.selected)) return;
+
+    Alert.alert(
+      "Delete Selected",
+      "Remove all selected items from cart?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: removeSelected,
+        },
+      ]
     );
   };
 
-  // ➕➖ Quantity control
-  const handleQuantityChange = (id: number, change: number) => {
-    setQuantities(prev => ({
-      ...prev,
-      [id]: Math.max(1, prev[id] + change)
-    }));
+  const handleCheckout = () => {
+    if (total === 0) return;
+    router.push("/checkout");
   };
-
-  // 🗑 Remove selected items
-  const handleDeleteSelected = () => {
-    const remainingProducts = products.filter(p => !selectedItems.includes(p.id));
-    setProducts(remainingProducts);
-
-    // Remove deleted products from quantities and selection
-    const updatedQuantities = { ...quantities };
-    selectedItems.forEach(id => delete updatedQuantities[id]);
-    setQuantities(updatedQuantities);
-    setSelectedItems([]);
-    setSelectAll(false);
-  };
-
-  // 💰 Calculate total
-  const total = selectedItems.reduce(
-    (sum, id) => sum + products.find(p => p.id === id)!.price * quantities[id],
-    0
-  );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
-        {/* Header */}
+        {/* HEADER */}
         <View style={styles.header}>
-          <Text style={styles.headertext}>Drugs Cart</Text>
+          <Text style={styles.headerText}>Drugs Cart</Text>
         </View>
 
-        {/* Select All */}
+        {/* SELECT ALL + DELETE */}
         <View style={styles.selectAllContainer}>
-          <View style={styles.selectAll}>
-          <Checkbox 
-            style={styles.checkbox}
-            value={selectAll} 
-            onValueChange={handleSelectAll} 
-            color={selectAll ? "#A02334" : undefined}
-          />
-          <Text style={styles.selectAllText}>Select All</Text>
+          <View style={styles.selectAllRow}>
+            <Checkbox
+              value={allSelected}
+              onValueChange={handleToggleAll}
+              color={allSelected ? "#A02334" : undefined}
+            />
+            <Text style={styles.selectAllText}>Select All</Text>
           </View>
-          <TouchableOpacity>
-            <Ionicons name="trash-outline" size={22} color="#A02334" />
+
+          <TouchableOpacity onPress={handleDeleteSelected}>
+            <Ionicons
+              name="trash-outline"
+              size={22}
+              color="#A02334"
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Cart Items */}
-        {products.map((item) => (
-          <View key={item.id} style={styles.cartItem}>
+        {/* EMPTY STATE */}
+        {cart.length === 0 && (
+          <View style={styles.empty}>
+            <Ionicons name="cart-outline" size={60} color="#999" />
+            <Text style={styles.emptyText}>Your cart is empty</Text>
+          </View>
+        )}
+
+        {/* CART ITEMS */}
+        {cart.map((item) => (
+          <View key={item._id} style={styles.cartItem}>
             <Checkbox
-              value={selectedItems.includes(item.id)}
-              onValueChange={(value) => handleSelectItem(item.id, value)}
-              color={selectedItems.includes(item.id) ? "#A02334" : undefined}
+              value={item.selected}
+              onValueChange={() => toggleSelect(item._id)}
+              color={item.selected ? "#A02334" : undefined}
             />
 
-            <Image source={item.image} style={styles.itemImage} />
-            
+            <Image
+              source={{ uri: item.image }}
+              style={styles.itemImage}
+            />
+
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemStock}>{item.stock}</Text>
+
               <View style={styles.priceQuantity}>
                 <Text style={styles.itemPrice}>₱{item.price}</Text>
 
                 <View style={styles.quantityContainer}>
-                  <TouchableOpacity onPress={() => handleQuantityChange(item.id, -1)}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      updateQuantity(item._id, item.quantity - 1)
+                    }
+                  >
                     <Text style={styles.quantityButton}>−</Text>
                   </TouchableOpacity>
-                  <Text style={styles.quantityText}>{quantities[item.id]}</Text>
-                  <TouchableOpacity onPress={() => handleQuantityChange(item.id, 1)}>
+
+                  <Text style={styles.quantityText}>
+                    {item.quantity}
+                  </Text>
+
+                  <TouchableOpacity
+                    onPress={() =>
+                      updateQuantity(item._id, item.quantity + 1)
+                    }
+                  >
                     <Text style={styles.quantityButton}>＋</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           </View>
-        )
-      )
-      }
+        ))}
       </ScrollView>
 
-      {/* Checkout */}
-      <TouchableOpacity  onPress={handleCheckout} style={styles.checkoutButton}>
-        <Text style={styles.checkoutText}>Checkout ₱{total.toFixed(2)}</Text>
+      {/* CHECKOUT */}
+      <TouchableOpacity
+        style={[
+          styles.checkoutButton,
+          total === 0 && { backgroundColor: "#999" },
+        ]}
+        onPress={handleCheckout}
+        disabled={total === 0}
+      >
+        <Text style={styles.checkoutText}>
+          Checkout ₱{total.toFixed(2)}
+        </Text>
       </TouchableOpacity>
 
       <Navbar />
@@ -173,102 +159,109 @@ const Cart = () => {
   );
 };
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderColor: "#A02334",
-    alignItems: "center",
-    justifyContent: "center",
-  },
   header: {
+    height: 80,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FEFEFE",
-    height: 80,
-    paddingTop: "10%",
+    backgroundColor: "#fff",
   },
-  headertext: {
+  headerText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#111111",
   },
+
   selectAllContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyItems:"center",
     justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     marginTop: 10,
   },
-  selectAll:{
+
+  selectAllRow: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   selectAllText: {
     fontSize: 16,
     marginLeft: 10,
   },
+
+  empty: {
+    alignItems: "center",
+    marginTop: 80,
+  },
+  emptyText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+  },
+
   cartItem: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F5F5F5",
-    borderRadius: 10,
-    padding: 10,
     marginHorizontal: 15,
     marginVertical: 8,
-    borderBottom: 5,
-    shadowColor:"#000",
-    shadowOffset:{width:0, height:1},
-    shadowOpacity: 0.20,
-    shadowRadius:2,
+    padding: 10,
+    borderRadius: 10,
+    elevation: 2,
   },
+
   itemImage: {
     width: 60,
     height: 60,
     resizeMode: "contain",
     marginHorizontal: 10,
   },
+
   itemInfo: {
     flex: 1,
   },
+
   itemName: {
-    fontWeight: "bold",
     fontSize: 16,
+    fontWeight: "600",
   },
-  itemStock: {
-    fontSize: 12,
+
+  priceQuantity: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 6,
+  },
+
+  itemPrice: {
+    fontSize: 15,
+    fontWeight: "bold",
     color: "#A02334",
   },
-  priceQuantity:{
-    flexDirection:"row",
-    justifyContent: "space-between"
-  },
-  itemPrice: {
-    fontSize: 14,
-    marginTop: 5,
-    fontWeight:"bold",
-  },
+
   quantityContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 5,
   },
+
   quantityButton: {
     fontSize: 14,
-    width: 21,
+    width: 22,
+    height: 22,
     textAlign: "center",
-    borderRadius:15,
-    borderWidth:2,
-    borderColor:"#A02334",
-    color:"#FFF",
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "#A02334",
     backgroundColor: "#A02334",
+    color: "#fff",
   },
+
   quantityText: {
-    fontSize: 16,
-    backgroundColor:"#F0F3F6",
     marginHorizontal: 10,
+    fontSize: 16,
   },
+
   checkoutButton: {
     backgroundColor: "#DF1C41",
     margin: 15,
@@ -277,6 +270,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 100,
   },
+
   checkoutText: {
     color: "#fff",
     fontSize: 18,

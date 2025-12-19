@@ -1,38 +1,88 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
-import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+} from "react-native";
+import React, { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useCart } from "../lib/CartContext";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+const API_BASE_URL = "http://192.168.100.11:3000/api";
+
 
 const Checkout = () => {
   const router = useRouter();
-  const [selectedPayment, setSelectedPayment] = useState('Gcash');
-  const handleAddress = () =>{
-    router.push("/addressselection")
-  };
-  const handleConfirmOrder = () =>{
-    router.replace ("/moreceive")
+  const { cart, clearSelected } = useCart();
+
+  const [selectedPayment, setSelectedPayment] = useState("Gcash");
+
+  const handleAddress = () => {
+    router.push("/addressselection");
   };
 
-  const products = [
-    {
-      id: 1,
-      image: require("../assets/images/Pain-Reliever.png"),
-      name: "Centrum",
-      stock: "IN STOCK",
-      price: 246,
-      quantity: 1,
-    },
-  ];
+  const handleConfirmOrder = async () => {
+    if (products.length === 0) return;
 
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        console.log("No token found");
+        return;
+      }
+
+      await axios.post(
+        `${API_BASE_URL}/orders`,
+        {
+          items: products.map(item => ({
+            productId: item._id,
+            name: item.name,
+            image: item.image,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          subtotal,
+          deliveryFee,
+          total,
+          paymentMethod: selectedPayment,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      clearSelected();              // ✅ works now
+      router.replace("/moreceive"); // ✅ works now
+    } catch (err) {
+      console.log("Checkout error:", err);
+    }
+  };
+
+
+  // ✅ ONLY SELECTED ITEMS
+  const products = cart.filter((item) => item.selected);
+
+  // ✅ SAME LOGIC AS BEFORE, BUT FOR ALL SELECTED ITEMS
   const deliveryFee = 34;
-  const subtotal = products.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const subtotal = products.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
   const total = subtotal + deliveryFee;
 
   const payments = [
-    { id: 'Gcash', label: 'Gcash', icon: require('../assets/images/gcash.jpg') },
-    { id: 'Paypal', label: 'Paypal', icon: require('../assets/images/paypal.png') },
-    { id: 'GooglePay', label: 'Google pay', icon: require('../assets/images/gpay.png') },
-    { id: 'COD', label: 'Cash on delivery', icon: require('../assets/images/wallets.png') },
+    { id: "Gcash", label: "Gcash", icon: require("../assets/images/gcash.jpg") },
+    { id: "Paypal", label: "Paypal", icon: require("../assets/images/paypal.png") },
+    { id: "GooglePay", label: "Google pay", icon: require("../assets/images/gpay.png") },
+    { id: "COD", label: "Cash on delivery", icon: require("../assets/images/wallets.png") },
   ];
 
   return (
@@ -52,7 +102,9 @@ const Checkout = () => {
           <View style={{ flex: 1, marginLeft: 8 }}>
             <Text style={styles.deliveryName}>Zumaan (+63) 999 3120 355</Text>
             <Text style={styles.addressText}>
-              Zone 2b Mabunay Compound{"\n"}Pagatpat, Cagayan De Oro City, Misamis Oriental,{"\n"}Mindanao, 9000
+              Zone 2b Mabunay Compound{"\n"}
+              Pagatpat, Cagayan De Oro City, Misamis Oriental,{"\n"}
+              Mindanao, 9000
             </Text>
           </View>
           <TouchableOpacity onPress={handleAddress} style={styles.addressbtn}>
@@ -62,13 +114,15 @@ const Checkout = () => {
 
         {/* PRODUCT */}
         {products.map((item) => (
-          <View key={item.id} style={styles.productCard}>
-            <Image source={item.image} style={styles.productImage} />
+          <View key={item._id} style={styles.productCard}>
+            <Image source={{ uri: item.image }} style={styles.productImage} />
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.productName}>{item.name}</Text>
-              <Text style={styles.inStock}>{item.stock}</Text>
+              <Text style={styles.inStock}>IN STOCK</Text>
               <Text style={styles.productPrice}>₱{item.price}</Text>
-              <Text style={styles.productQty}>Quantity: {item.quantity}x</Text>
+              <Text style={styles.productQty}>
+                Quantity: {item.quantity}x
+              </Text>
             </View>
           </View>
         ))}
@@ -84,8 +138,15 @@ const Checkout = () => {
             >
               <Image source={method.icon} style={styles.paymentIcon} />
               <Text style={styles.paymentText}>{method.label}</Text>
-              <View style={[styles.radioOuter, selectedPayment === method.id && styles.radioSelected]}>
-                {selectedPayment === method.id && <View style={styles.radioInner} />}
+              <View
+                style={[
+                  styles.radioOuter,
+                  selectedPayment === method.id && styles.radioSelected,
+                ]}
+              >
+                {selectedPayment === method.id && (
+                  <View style={styles.radioInner} />
+                )}
               </View>
             </TouchableOpacity>
           ))}
@@ -108,7 +169,11 @@ const Checkout = () => {
         </View>
 
         {/* CONFIRM BUTTON */}
-        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmOrder}>
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={handleConfirmOrder}
+          disabled={products.length === 0}
+        >
           <Text style={styles.confirmText}>Confirm Order</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -117,10 +182,7 @@ const Checkout = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#fff",
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -138,9 +200,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginRight: 25,
   },
-  scrollView: { 
-    padding: 16, 
-  },
+  scrollView: { padding: 16 },
   addressContainer: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -149,20 +209,10 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 16,
   },
-  deliveryName: { 
-    fontWeight: "600",
-    color: "#000",
-   },
-  addressText: { 
-    color: "#444",
-     fontSize: 13, 
-     marginTop: 4,
-  },
-  addressbtn:{
-    justifyContent:"center",
-    marginTop:25,
+  deliveryName: { fontWeight: "600", color: "#000" },
+  addressText: { color: "#444", fontSize: 13, marginTop: 4 },
+  addressbtn: { justifyContent: "center", marginTop: 25 },
 
-  },
   productCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -173,36 +223,20 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 16,
   },
-  productImage: { 
-    width: 70, 
-    height: 70, 
-    resizeMode: "contain", 
-  },
-  productName: { 
-    fontWeight: "600", 
-    fontSize: 15, 
-  },
-  inStock: { color: "#A02334",
-     fontSize: 12, 
-     marginVertical: 2. 
-    },
-  productPrice: { 
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  productQty: { 
+  productImage: { width: 70, height: 70, resizeMode: "contain" },
+  productName: { fontWeight: "600", fontSize: 15 },
+  inStock: { color: "#A02334", fontSize: 12, marginVertical: 2 },
+  productPrice: { fontWeight: "600", fontSize: 16 },
+  productQty: {
     fontWeight: "600",
     fontSize: 16,
     color: "#444",
     textAlign: "right",
     paddingLeft: 150,
   },
-  sectionTitle: {
-    fontWeight: "600",
-    fontSize: 15,
-    marginBottom: 23,
-    marginTop:15,
-  },
+
+  sectionTitle: { fontWeight: "600", fontSize: 15, marginBottom: 23, marginTop: 15 },
+
   paymentContainer: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -219,17 +253,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: "#eee",
   },
-  paymentIcon: { 
-    width: 26, 
-    height: 26, 
-    resizeMode: "contain", 
-    marginRight: 10, 
-  },
-  paymentText: { 
-    flex: 1, 
-    fontSize: 14,
-    color: "#111", 
-  },
+  paymentIcon: { width: 26, height: 26, resizeMode: "contain", marginRight: 10 },
+  paymentText: { flex: 1, fontSize: 14, color: "#111" },
+
   radioOuter: {
     width: 20,
     height: 20,
@@ -239,58 +265,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  radioSelected: {
-     borderColor: "#A02334", 
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#A02334",
-  },
-  totalContainer: { 
-    marginBottom: 16, 
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 4,
-  },
-  totalRowFinal:{
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 4,
-    fontSize:25,
-    fontWeight: 500,
-  },
-  totalLabel: { 
-    color: "#555", 
-  },
-  totalValue: { 
-    color: "#000", 
-    fontWeight: "500", 
-  },
-  orderTotalLabel: { 
-    fontWeight: "700", 
-    color: "#A02334", 
-    fontSize: 25,
-  },
-  orderTotalValue: { 
-    fontWeight: "700", 
-    color: "#A02334", 
-    fontSize: 25,
-  },
+  radioSelected: { borderColor: "#A02334" },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#A02334" },
+
+  totalContainer: { marginBottom: 16 },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
+  totalRowFinal: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
+
+  totalLabel: { color: "#555" },
+  totalValue: { color: "#000", fontWeight: "500" },
+  orderTotalLabel: { fontWeight: "700", color: "#A02334", fontSize: 25 },
+  orderTotalValue: { fontWeight: "700", color: "#A02334", fontSize: 25 },
+
   confirmButton: {
     backgroundColor: "#A02334",
     borderRadius: 50,
     paddingVertical: 14,
     alignItems: "center",
   },
-  confirmText: { 
-    color: "#fff", 
-    fontWeight: "700", 
-    fontSize: 16 
-  },
+  confirmText: { color: "#fff", fontWeight: "700", fontSize: 16 },
 });
 
 export default Checkout;
