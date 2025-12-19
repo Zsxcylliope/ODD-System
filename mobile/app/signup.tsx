@@ -41,6 +41,10 @@ const Signup = () => {
             Alert.alert("Success", res.data.message);
             router.replace("/login"); // go to login after successful signup
         } catch (err: any) {
+            console.log("LOGIN ERROR:", err);
+            console.log("RESPONSE:", err?.response);
+            console.log("MESSAGE:", err?.message);
+            
             Alert.alert(
                 "Registration failed",
                 err.response?.data?.message || "Network error"

@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { useRouter, Link } from "expo-router";
 import api from "../lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const Login = () => {
   const router = useRouter();
@@ -28,10 +30,16 @@ const Login = () => {
         email: email.toLowerCase(),
         password,
       });
+      
+      await AsyncStorage.setItem("token", res.data.token);
 
       Alert.alert("Login successful", `Welcome ${res.data.user.fullname}`);
       router.replace("/home");
     } catch (err: any) {
+      console.log("LOGIN ERROR:", err);
+      console.log("RESPONSE:", err?.response);
+      console.log("MESSAGE:", err?.message);
+
       Alert.alert(
         "Login failed",
         err.response?.data?.message || "Network error"

@@ -1,101 +1,116 @@
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  SafeAreaView 
-} from 'react-native';
-import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from "expo-router";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  SafeAreaView,
+  ActivityIndicator,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
+
 import ProductCard from "./productcard";
-import Navbar from "./navbar"; 
+import Navbar from "./navbar";
+
+const API_BASE_URL = "http://192.168.100.11:3000/api";
+
+type Product = {
+  _id: string;
+  name: string;
+  image: string;
+  rating: number;
+  price: number;
+  stock: number;
+};
 
 const Search = () => {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Product list
-  const products = [
-    { id: 1, image: require("../assets/images/benadryl.png"), name: "Benadryl", rating: 4, price: 246 },
-    { id: 2, image: require("../assets/images/zyrtec-removebg-preview.png"), name: "Zyrtec", rating: 5, price: 246 },
-    { id: 3, image: require("../assets/images/claritin-removebg-preview.png"), name: "Claritin", rating: 4.5, price: 246 },
-    { id: 4, image: require("../assets/images/allegra.png"), name: "Allegra", rating: 2, price: 246 },
-    { id: 5, image: require("../assets/images/STELON-FURTAZINE-TAB-1-scaled-removebg-preview.png"), name: "Furtazine", rating: 2, price: 246 },
-    { id: 6, image: require("../assets/images/trimeton.png"), name: "Chlor-Timeton", rating: 3.5, price: 246 },
-    { id: 7, image: require("../assets/images/centrum.png"), name: "Centrum", rating: 4, price: 246 },
-    { id: 8, image: require("../assets/images/conzace.png"), name: "Conzace", rating: 5, price: 246 },
-    { id: 9, image: require("../assets/images/ceelin-removebg-preview.png"), name: "Ceelin", rating: 4.5, price: 246 },
-    { id: 10, image: require("../assets/images/immunpro-removebg-preview.png"), name: "ImmunPro", rating: 2, price: 246 },
-    { id: 11, image: require("../assets/images/forti-removebg-preview.png"), name: "Forti-D", rating: 2, price: 246 },
-    { id: 12, image: require("../assets/images/enervon-removebg-preview.png"), name: "Enervon", rating: 3.5, price: 246 },
-    { id: 13, image: require("../assets/images/bioflu.png"), name: "Bioflu", rating: 4, price: 246 },
-    { id: 14, image: require("../assets/images/tuseran-removebg-preview.png"), name: "Tuseran", rating: 5, price: 246 },
-    { id: 15, image: require("../assets/images/ascof forte.png"), name: "Ascof Forte", rating: 4.5, price: 246 },
-    { id: 16, image: require("../assets/images/SOLMUX_ADVANCE_500MG_5MG_TAB__63166-removebg-preview.png"), name: "Solmux", rating: 2, price: 246 },
-    { id: 17, image: require("../assets/images/decolgem-removebg-preview.png"), name: "Decolgen", rating: 2, price: 246 },
-    { id: 18, image: require("../assets/images/neozep-removebg-preview.png"), name: "Neozep", rating: 3.5, price: 246 },
-    { id: 19, image: require("../assets/images/Biogesic.png"), name: "Biogesic", rating: 4, price: 246 },
-    { id: 20, image: require("../assets/images/ibuprofen-removebg-preview.png"), name: "Ibuprofen", rating: 5, price: 246 },
-    { id: 21, image: require("../assets/images/aspirin.png"), name: "Aspirin", rating: 4.5, price: 246 },
-    { id: 22, image: require("../assets/images/mefenamic-removebg-preview.png"), name: "Mefenamic Acid", rating: 2, price: 246 },
-    { id: 23, image: require("../assets/images/naproxen-removebg-preview.png"), name: "Naproxen", rating: 2, price: 246 },
-    { id: 24, image: require("../assets/images/flanax-removebg-preview.png"), name: "Flanax Forte", rating: 3.5, price: 246 },
-  ];
+  // 🔍 Debounced search
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setProducts([]);
+      setLoading(false);
+      return;
+    }
 
-  // Sort alphabetically
-  const sortedProducts = products.sort((a, b) => a.name.localeCompare(b.name));
+    const timeout = setTimeout(fetchProducts, 400);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
 
-  // Filter products
-  const filteredProducts = sortedProducts.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/products`, {
+        params: { search: searchQuery },
+      });
+      setProducts(res.data);
+    } catch (err) {
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-        <ScrollView contentContainerStyle={styles.scrollView}>
-            {/* Header */}
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        {/* HEADER */}
         <View style={styles.header}>
-            <Text style={styles.headerText}>Search Medicine</Text>
+          <Text style={styles.headerText}>Search Medicine</Text>
         </View>
 
-        {/* Search Bar */}
+        {/* SEARCH BAR */}
         <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={20} color="#A02334" style={styles.searchIcon} />
-            <TextInput
+          <Ionicons
+            name="search-outline"
+            size={20}
+            color="#A02334"
+            style={styles.searchIcon}
+          />
+          <TextInput
             placeholder="Search Medicine"
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={styles.searchInput}
             placeholderTextColor="#A0A0A0"
-            />
+          />
         </View>
 
-        {/* Product Results */}
-            {searchQuery === "" ? (
-            <View />
-            ) : filteredProducts.length > 0 ? (
-            <View style={styles.gridContainer}>
-                {filteredProducts.map((product) => (
-                <View key={product.id} style={styles.gridItem}>
-                    <ProductCard
-                    image={product.image}
-                    name={product.name}
-                    rating={product.rating}
-                    price={product.price}
-                    />
-                </View>
-                ))}
-            </View>
-            ) : (
-            <Text style={styles.noResults}>No products found</Text>
-            )}
-            <View style={{ height: 40 }} /> {/* Spacer for Navbar */}
-        </ScrollView>
-    
+        {/* RESULTS */}
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#A02334"
+            style={{ marginTop: 30 }}
+          />
+        ) : searchQuery === "" ? null : products.length > 0 ? (
+          <View style={styles.gridContainer}>
+            {products.map((product) => (
+              <View key={`${product._id}-${searchQuery}`}
+                style={styles.gridItem}>
+                <ProductCard
+                  id={product._id}           // ✅ REQUIRED
+                  image={{ uri: product.image }}
+                  name={product.name}
+                  rating={product.rating}
+                  price={product.price}
+                  stock={product.stock}
+                />
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.noResults}>No products found</Text>
+        )}
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
       <Navbar />
     </SafeAreaView>
   );

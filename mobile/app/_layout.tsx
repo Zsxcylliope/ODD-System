@@ -1,5 +1,10 @@
 import { Stack } from "expo-router";
+import { CartProvider } from "../lib/CartContext";
 
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerShown: false }}/>; //hides header
+  return (
+    <CartProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </CartProvider>
+  );
 }

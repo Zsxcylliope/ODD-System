@@ -1,134 +1,190 @@
-import { View,Text,StyleSheet,Image, TouchableOpacity, SafeAreaView,ScrollView } from 'react-native';
-import React, { useState } from 'react';
-import { useRouter, usePathname } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
-import ProductCard from "./productcard";
-import Navbar from "./navbar"; 
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 
+import ProductCard from "./productcard";
+import Navbar from "./navbar";
+
+const API_BASE_URL = "http://192.168.100.11:3000/api";
+
+type Product = {
+  _id: string;
+  name: string;
+  image: string;
+  rating: number;
+  price: number;
+  stock: number;
+};
 
 const Home = () => {
   const router = useRouter();
-  const pathname = usePathname();
-  const [hovered, setHovered] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // 🛍️ Example products for your grid
-  const products = [
-    {
-      id: 1,
-      image: require("../assets/images/tiki-tiki.png"),
-      name: "Tiki-Tiki Syrup",
-      rating: 4,
-      price: 246,
-    },
-    {
-      id: 2,
-      image: require("../assets/images/centrum.png"),
-      name: "Centrum",
-      rating: 5,
-      price: 246,
-    },
-    {
-      id: 3,
-      image: require("../assets/images/Biogesic.png"),
-      name: "Biogesic",
-      rating: 4.5,
-      price: 131,
-    },
-    {
-      id: 4,
-      image: require("../assets/images/Rexidol.png"),
-      name: "Rexidol",
-      rating: 2,
-      price: 320,
-    },
-  ];
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/products/top`);
+      setProducts(res.data);
+    } catch (error) {
+      console.error("Failed to load products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView style={style.scroll}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* HEADER */}
-        <View style={style.container}>
-          <TouchableOpacity onPress={() => router.push('/notifications')} style={style.notification}>
-            <Ionicons name="notifications-outline" color={'#f3f4f5'} size={35} />
+        <View style={styles.container}>
+          <TouchableOpacity
+            onPress={() => router.replace("/notifications")}
+            style={styles.notification}
+          >
+            <Ionicons
+              name="notifications-outline"
+              color="#f3f4f5"
+              size={32}
+            />
           </TouchableOpacity>
-          <Image source={require('../assets/images/logo-white.png')} style={style.logo} />
+
+          <Image
+            source={require("../assets/images/logo-white.png")}
+            style={styles.logo}
+          />
         </View>
 
         {/* MAIN CONTENT */}
         <View style={{ flex: 1, paddingBottom: 10 }}>
           {/* CATEGORIES */}
-          <Text style={style.maintext}>Categories</Text>
-          <View style={style.categoriesContainer}>
-            <TouchableOpacity onPress={() => router.push('/painreliever')} style={style.category}>
-              <Image source={require('../assets/images/Pain-Reliever.png')} style={style.categoryimg} />
-              <View style={style.categorytextContainer}>
-                <Text style={style.categorytext}>Pain Reliever</Text>
-              </View>
-            </TouchableOpacity>
+          <Text style={styles.maintext}>Categories</Text>
 
-            <TouchableOpacity onPress={() => router.push('/cough')} style={style.category}>
-              <Image source={require('../assets/images/Cough,Cold,Flu.png')} style={style.categoryimg} />
-              <View style={style.categorytextContainer}>
-                <Text style={style.categorytext}>Cough, Cold, Flu</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push('/vitamins')} style={style.category}>
-              <Image source={require('../assets/images/Vitamins.png')} style={style.categoryimg} />
-              <View style={style.categorytextContainer}>
-                <Text style={style.categorytext}>Vitamins</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push('/allergy')} style={style.category}>
-              <Image source={require('../assets/images/Allergy-Reliever.png')} style={style.categoryimg} />
-              <View style={style.categorytextContainer}>
-                <Text style={style.categorytext}>Allergy Reliever</Text>
-              </View>
-            </TouchableOpacity>
+          <View style={styles.categoriesContainer}>
+            <Category
+              title="Pain Reliever"
+              image={require("../assets/images/Pain-Reliever.png")}
+              onPress={() =>
+                router.push({
+                  pathname: "/category/[category]",
+                  params: { category: "Pain Reliever" },
+                })
+              }
+            />
+            <Category
+              title="Cough, Cold, Flu"
+              image={require("../assets/images/Cough,Cold,Flu.png")}
+              onPress={() =>
+                router.replace({
+                  pathname: "/category/[category]",
+                  params: { category: "Cough" },
+                })
+              }
+            />
+            <Category
+              title="Vitamins"
+              image={require("../assets/images/Vitamins.png")}
+              onPress={() =>
+                router.replace({
+                  pathname: "/category/[category]",
+                  params: { category: "Vitamins" },
+                })
+              }
+            />
+            <Category
+              title="Allergy Reliever"
+              image={require("../assets/images/Allergy-Reliever.png")}
+              onPress={() =>
+                router.replace({
+                  pathname: "/category/[category]",
+                  params: { category: "Allergy" },
+                })
+              }
+            />
           </View>
 
-          {/* BEST DEALS GRID */}
-          <Text style={style.maintext}>Best Deals from your Dealers!</Text>
-          <View style={style.gridContainer}>
-            {products.map((product) => (
-              <View key={product.id} style={style.gridItem}>
-                <ProductCard
-                  image={product.image}
-                  name={product.name}
-                  rating={product.rating}
-                  price={product.price}
-                />
-              </View>
-            ))}
-          </View>
+          {/* BEST DEALS */}
+          <Text style={styles.maintext}>Best Deals from your Dealers!</Text>
 
+          {loading ? (
+            <ActivityIndicator size="large" color="#A02334" />
+          ) : (
+            <View style={styles.gridContainer}>
+              {products.map((product) => (
+                <View key={product._id} style={styles.gridItem}>
+                  <ProductCard
+                    id={product._id}               // ✅ REQUIRED
+                    image={{ uri: product.image }}
+                    name={product.name}
+                    rating={product.rating}
+                    price={product.price}
+                    stock={product.stock}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 
-     {/* ✅ STATIC NAVBAR */}
       <Navbar />
     </SafeAreaView>
   );
 };
 
-const style = StyleSheet.create({
+/* ============================= */
+/* CATEGORY COMPONENT */
+/* ============================= */
+const Category = ({
+  title,
+  image,
+  onPress,
+}: {
+  title: string;
+  image: any;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity onPress={onPress} style={styles.category}>
+    <Image source={image} style={styles.categoryimg} />
+    <View style={styles.categorytextContainer}>
+      <Text style={styles.categorytext}>{title}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+/* ============================= */
+/* STYLES */
+/* ============================= */
+const styles = StyleSheet.create({
   notification: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     paddingRight: 20,
     marginTop: 50,
     marginBottom: 20,
   },
   container: {
     backgroundColor: "#A02334",
-    flex: 1,
     maxHeight: 300,
   },
   logo: {
-    maxHeight: 200,
-    maxWidth: 200,
-    resizeMode: 'contain',
-    alignSelf: 'center',
+    height: 200,
+    width: 200,
+    resizeMode: "contain",
+    alignSelf: "center",
   },
   scroll: {
     marginBottom: 70,
@@ -151,34 +207,27 @@ const style = StyleSheet.create({
     width: "43%",
     height: 170,
     marginBottom: 25,
-    justifyContent: "center",
     borderRadius: 10,
-    overflow: 'hidden',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    overflow: "hidden",
     elevation: 5,
   },
   categoryimg: {
     width: 80,
     height: 100,
-    resizeMode: "cover",
+    resizeMode: "contain",
     alignSelf: "center",
     marginTop: 15,
   },
   categorytextContainer: {
     marginTop: 10,
     backgroundColor: "#EEEEEE",
-    width: '100%',
     height: 60,
+    justifyContent: "center",
   },
   categorytext: {
     fontSize: 15,
     fontWeight: "bold",
     color: "black",
-    textAlign: "left",
-    paddingTop: 5,
     paddingLeft: 12,
   },
   gridContainer: {
@@ -186,20 +235,13 @@ const style = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-around",
     paddingHorizontal: 10,
-    paddingTop: 10,
   },
   gridItem: {
     backgroundColor: "#E0E0E0",
     width: "45%",
     height: 260,
     marginBottom: 25,
-    justifyContent: "center",
     borderRadius: 10,
-    overflow: 'hidden',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
     elevation: 5,
   },
 });
