@@ -1,5 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
+import Notification from "../models/Notification.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -18,6 +19,17 @@ router.post("/", authMiddleware, async (req, res) => {
     paymentMethod,
     status: "to_receive",
   });
+
+  // Create a notification for the new order
+  await Notification.create({
+    userId: req.user.id,
+    title: "Order Confirmed",
+    message: `Your order #${order._id
+        .toString()
+        .slice(-6)
+        .toUpperCase()} has been confirmed.`,
+      relatedOrder: order._id,
+    });
 
   res.status(201).json(order);
 } catch (err) {

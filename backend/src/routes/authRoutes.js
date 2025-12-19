@@ -70,11 +70,18 @@ router.post("/register", async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.status(201).json({
-      message: "User registered successfully",
-      token,
-      user,
-    });
+      res.status(201).json({
+    message: "User registered successfully",
+    token,
+    user: {
+      _id: user._id,
+      fullname: user.fullname,
+      userCode: user.userCode,
+      profileImage: user.profileImage,
+      email: user.email,
+    },
+  });
+
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -106,11 +113,18 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.json({
-      message: "Login successful",
-      token,
-      user,
-    });
+      res.json({
+        message: "Login successful",
+        token,
+        user: {
+          _id: user._id,
+          fullname: user.fullname,
+          userCode: user.userCode,
+          profileImage: user.profileImage,
+          email: user.email,
+      },
+  });
+
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }

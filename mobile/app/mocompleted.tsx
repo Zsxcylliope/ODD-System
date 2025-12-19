@@ -16,7 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Navbar from "./navbar";
 
-const API_BASE_URL = "http://192.168.100.11:3000/api";
+const API_BASE_URL = "http://192.168.1.13:3000/api";
 
 const MOCompleted = () => {
   const router = useRouter();

@@ -1,36 +1,106 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+  ActivityIndicator,
+} from "react-native";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
-import Navbar from "./navbar"; 
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "../lib/api";
+import Navbar from "./navbar";
+
+type User = {
+  _id: string;
+  fullname: string;
+  userCode: string;
+  profileImage: string;
+  email: string;
+};
 
 const Profile = () => {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        router.replace("/");
+        return;
+      }
+
+      const res = await api.get("/users/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setUser(res.data);
+    } catch (error) {
+      console.error("PROFILE FETCH ERROR:", error);
+      router.replace("/");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loader}>
+        <ActivityIndicator size="large" color="#A02334" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!user) return null;
+
+  // ✅ Normalize avatar (SVG → PNG fallback safe)
+  const avatarUri = user.profileImage
+    ? user.profileImage.replace("/svg", "/png")
+    : `https://api.dicebear.com/7.x/avataaars/png?seed=${user.email}`;
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header Section */}
+      {/* Header */}
       <View style={styles.header}>
-        <Image 
-          source={require('../assets/images/miming.jpg')} 
-          style={styles.profileImage} 
-        />
+        <Image source={{ uri: avatarUri }} style={styles.profileImage} />
+
         <View style={styles.userInfo}>
           <View style={styles.nameRow}>
-            <Text style={styles.userName}>Zumaan</Text>
-            <Ionicons name="create-outline" size={18} color="#fff" style={{ marginLeft: 5 }} />
+            <Text style={styles.userName}>{user.fullname}</Text>
+
+            <TouchableOpacity
+              onPress={() => router.push("/edit-profile")}
+              style={styles.editBtn}
+            >
+              <Ionicons name="create-outline" size={18} color="#fff" />
+            </TouchableOpacity>
           </View>
-          <Text style={styles.userId}>ID 845289347</Text>
+
+          <Text style={styles.userId}>ID {user.userCode}</Text>
         </View>
       </View>
 
-      {/* My Orders Section */}
+      {/* My Orders */}
       <View style={styles.orderContainer}>
         <Text style={styles.orderTitle}>My Order</Text>
 
         <View style={styles.orderRow}>
-          {/* Cart */}
-          <TouchableOpacity onPress={() => router.replace('/cart')} style={styles.iconContainer}>
+          <TouchableOpacity
+            onPress={() => router.replace("/cart")}
+            style={styles.iconContainer}
+          >
             <Ionicons name="cart-outline" size={28} color="#A02334" />
             <View style={styles.badge}>
               <Text style={styles.badgeText}>0</Text>
@@ -38,8 +108,10 @@ const Profile = () => {
             <Text style={styles.iconLabel}>Cart</Text>
           </TouchableOpacity>
 
-          {/* Ship */}
-          <TouchableOpacity onPress={() => router.replace('/moreceive')} style={styles.iconContainer}>
+          <TouchableOpacity
+            onPress={() => router.replace("/moreceive")}
+            style={styles.iconContainer}
+          >
             <Ionicons name="car-outline" size={28} color="#A02334" />
             <View style={styles.badge}>
               <Text style={styles.badgeText}>1</Text>
@@ -47,8 +119,10 @@ const Profile = () => {
             <Text style={styles.iconLabel}>Ship</Text>
           </TouchableOpacity>
 
-          {/* Receive */}
-          <TouchableOpacity onPress={() => router.replace('/mocompleted')} style={styles.iconContainer}>
+          <TouchableOpacity
+            onPress={() => router.replace("/mocompleted")}
+            style={styles.iconContainer}
+          >
             <Ionicons name="cube-outline" size={28} color="#A02334" />
             <View style={styles.badge}>
               <Text style={styles.badgeText}>2</Text>
@@ -58,8 +132,14 @@ const Profile = () => {
         </View>
       </View>
 
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={() => router.replace('/')}>
+      {/* Logout */}
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={async () => {
+          await AsyncStorage.removeItem("token");
+          router.replace("/");
+        }}
+      >
         <Ionicons name="log-out-outline" size={20} color="#A02334" />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
@@ -76,6 +156,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   header: {
     paddingTop: 80,
     paddingLeft: 20,
@@ -90,16 +175,19 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     borderWidth: 2,
     borderColor: "#fff",
-    marginBottom: 10,
-    paddingLeft: 10,
   },
   userInfo: {
-    alignItems: "center",
     marginLeft: 15,
   },
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  editBtn: {
+    marginLeft: 10,
+    padding: 6,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
   userName: {
     color: "#fff",

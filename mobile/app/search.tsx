@@ -14,7 +14,7 @@ import axios from "axios";
 import ProductCard from "./productcard";
 import Navbar from "./navbar";
 
-const API_BASE_URL = "http://192.168.100.11:3000/api";
+const API_BASE_URL = "http://192.168.1.13:3000/api";
 
 type Product = {
   _id: string;

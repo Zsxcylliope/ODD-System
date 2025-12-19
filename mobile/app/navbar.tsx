@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   activeNavItem: {
     borderTopWidth: 2,

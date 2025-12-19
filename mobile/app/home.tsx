@@ -11,12 +11,12 @@ import {
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import axios from "axios";
+import api from "../lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import ProductCard from "./productcard";
 import Navbar from "./navbar";
 
-const API_BASE_URL = "http://192.168.100.11:3000/api";
 
 type Product = {
   _id: string;
@@ -38,7 +38,7 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/products/top`);
+      const res = await api.get("/products/top");
       setProducts(res.data);
     } catch (error) {
       console.error("Failed to load products:", error);
@@ -46,6 +46,32 @@ const Home = () => {
       setLoading(false);
     }
   };
+
+  const [notifCount, setNotifCount] = useState(0);
+
+useEffect(() => {
+  fetchUnreadCount();
+}, []);
+
+const fetchUnreadCount = async () => {
+  const token = await AsyncStorage.getItem("token");
+  if (!token) return;
+
+  api
+    .get("/notifications/unread/count", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then(res => {
+      setNotifCount(res.data.count);
+    })
+    .catch(() => {
+      // intentionally swallowed
+    });
+};
+
+
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -61,6 +87,13 @@ const Home = () => {
               color="#f3f4f5"
               size={32}
             />
+            {notifCount > 0 && (
+               <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {notifCount > 99 ? "99+" : notifCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
 
           <Image
@@ -244,6 +277,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 5,
   },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: 12,
+    backgroundColor: "#EE002D",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+},
 });
 
 export default Home;
