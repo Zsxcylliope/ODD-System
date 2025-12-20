@@ -4,8 +4,6 @@ import { useRouter } from "expo-router";
 import { Link } from "expo-router";
 import api from "../lib/api";
 
-
-
     const ForgotPassword = () => {
         const router = useRouter();
 

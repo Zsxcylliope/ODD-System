@@ -13,10 +13,8 @@ import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import api from "../lib/api";
 import Navbar from "./navbar";
-
-const API_BASE_URL = "http://192.168.100.11:3000/api";
 
 const MOReceive = () => {
   const router = useRouter();
@@ -33,7 +31,7 @@ const MOReceive = () => {
         const token = await AsyncStorage.getItem("token");
         if (!token) return;
 
-        const res = await axios.get(`${API_BASE_URL}/orders`, {
+        const res = await api.get("/orders", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -61,8 +59,8 @@ const MOReceive = () => {
       const token = await AsyncStorage.getItem("token");
       if (!token || !selectedOrder) return;
 
-      await axios.patch(
-        `${API_BASE_URL}/orders/${selectedOrder._id}`,
+      await api.patch(
+        `/orders/${selectedOrder._id}`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );

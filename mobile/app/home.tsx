@@ -11,12 +11,11 @@ import {
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "../lib/api";
 
 import ProductCard from "./productcard";
 import Navbar from "./navbar";
-
-const API_BASE_URL = "http://192.168.100.11:3000/api";
 
 type Product = {
   _id: string;
@@ -31,6 +30,7 @@ const Home = () => {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetchProducts();
@@ -38,7 +38,7 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/products/top`);
+      const res = await api.get("/products/top");
       setProducts(res.data);
     } catch (error) {
       console.error("Failed to load products:", error);
@@ -46,6 +46,24 @@ const Home = () => {
       setLoading(false);
     }
   };
+
+  const loadUnread = async () => {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return;
+
+    const res = await api.get(
+      "/notifications/unread/count",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setUnreadCount(res.data.count);
+  };
+
+  useEffect(() => {
+    loadUnread();
+    const interval = setInterval(loadUnread, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -56,11 +74,9 @@ const Home = () => {
             onPress={() => router.replace("/notifications")}
             style={styles.notification}
           >
-            <Ionicons
-              name="notifications-outline"
-              color="#f3f4f5"
-              size={32}
-            />
+            <Ionicons name="notifications-outline" color="#f3f4f5" size={32} />
+
+            {unreadCount > 0 && <View style={styles.redDot} />}
           </TouchableOpacity>
 
           <Image
@@ -170,12 +186,6 @@ const Category = ({
 /* STYLES */
 /* ============================= */
 const styles = StyleSheet.create({
-  notification: {
-    alignSelf: "flex-end",
-    paddingRight: 20,
-    marginTop: 50,
-    marginBottom: 20,
-  },
   container: {
     backgroundColor: "#A02334",
     maxHeight: 300,
@@ -194,6 +204,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#DF1C41",
     fontWeight: "bold",
+  },
+  notification: {
+    alignSelf: "flex-end",
+    paddingRight: 20,
+    marginTop: 50,
+    marginBottom: 20,
+  },
+  redDot: {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "red",
   },
   categoriesContainer: {
     flexDirection: "row",

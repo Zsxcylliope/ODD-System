@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,12 +6,12 @@ import {
   SafeAreaView,
   ScrollView,
 } from "react-native";
+import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import api from "../lib/api";
 
-const API_BASE_URL = "http://192.168.100.11:3000/api";
 
 const timeAgo = (date: string) => {
   const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -30,23 +29,47 @@ const Notifications = () => {
     const token = await AsyncStorage.getItem("token");
     if (!token) return;
 
-    const res = await axios.get(`${API_BASE_URL}/notifications`, {
+    const res = await api.get("/notifications", {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     setNotifications(res.data);
   };
 
+  const openNotification = async (notif: any) => {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return;
+
+    // mark as read
+    if (!notif.isRead) {
+      await api.patch(
+        `/notifications/${notif._id}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    }
+
+    // redirect based on type
+    if (notif.type === "order_confirmed")
+      router.replace("/moreceive");
+
+    if (notif.type === "order_received")
+      router.replace("/mocompleted");
+
+    if (notif.type === "order_cancelled")
+      router.replace("/mocancelled");
+  };
+
   useEffect(() => {
     loadNotifications();
-    const interval = setInterval(loadNotifications, 5000); // 🔥 REAL-TIME
+    const interval = setInterval(loadNotifications, 5000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace("/home")} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back-outline" size={20} />
         </TouchableOpacity>
         <Text style={styles.headerText}>Notifications</Text>
@@ -54,16 +77,27 @@ const Notifications = () => {
 
       <ScrollView>
         {notifications.map((n) => (
-          <View key={n._id} style={styles.notificationCard}>
+          <TouchableOpacity
+            key={n._id}
+            style={styles.notificationCard}
+            onPress={() => openNotification(n)}
+          >
             <View style={styles.iconBackground}>
               <Ionicons name="bag-handle-outline" size={26} color="#A02334" />
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.notificationText}>{n.message}</Text>
+              <Text
+                style={[
+                  styles.notificationText,
+                  !n.isRead && styles.unreadText,
+                ]}
+              >
+                {n.message}
+              </Text>
               <Text style={styles.timeText}>{timeAgo(n.createdAt)}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -132,6 +166,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888888',
   },
+  unreadText: {
+    fontWeight: "700",
+  }
 });
 
 export default Notifications;

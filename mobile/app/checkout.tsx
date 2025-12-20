@@ -13,8 +13,8 @@ import { useRouter } from "expo-router";
 import { useCart } from "../lib/CartContext";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-const API_BASE_URL = "http://192.168.100.11:3000/api";
+import api from "../lib/api";
+
 
 
 const Checkout = () => {
@@ -37,8 +37,8 @@ const Checkout = () => {
         return;
       }
 
-      await axios.post(
-        `${API_BASE_URL}/orders`,
+      await api.post(
+        "/orders",
         {
           items: products.map(item => ({
             productId: item._id,

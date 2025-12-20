@@ -9,12 +9,9 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import axios from "axios";
-
+import api from "../lib/api";
 import ProductCard from "./productcard";
 import Navbar from "./navbar";
-
-const API_BASE_URL = "http://192.168.100.11:3000/api";
 
 type Product = {
   _id: string;
@@ -45,7 +42,7 @@ const Search = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE_URL}/products`, {
+      const res = await api.get("/products", {
         params: { search: searchQuery },
       });
       setProducts(res.data);
