@@ -1,5 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
+import Notification from "../models/Notification.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import Notification from "../models/Notification.js";
 
@@ -28,8 +29,8 @@ router.post("/", authMiddleware, async (req, res) => {
     message: `Your order #${order._id} has been confirmed.`,
   });
 
-  res.status(201).json(order);
-} catch (err) {
+    res.status(201).json(order);
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -37,7 +38,7 @@ router.post("/", authMiddleware, async (req, res) => {
 // GET USER ORDERS
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user.id })
+    const orders = await Order.find({ userId: req.user.userId })
       .sort({ createdAt: -1 });
 
     res.json(orders);
@@ -49,7 +50,7 @@ router.get("/", authMiddleware, async (req, res) => {
 router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     const order = await Order.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
+      { _id: req.params.id, userId: req.user.userId },
       { status: req.body.status },
       { new: true }
     );

@@ -8,6 +8,16 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../lib/api";
@@ -69,7 +79,7 @@ const Notifications = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.replace("/home")}>
           <Ionicons name="chevron-back-outline" size={20} />
         </TouchableOpacity>
         <Text style={styles.headerText}>Notifications</Text>
@@ -99,15 +109,32 @@ const Notifications = () => {
             </View>
           </TouchableOpacity>
         ))}
+
+        {notifications.length === 0 && (
+          <Text style={styles.emptyText}>
+            No notifications yet
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
+  );
+};
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    height: 60,
+    borderBottomWidth: 0.3,
+    borderBottomColor: "#ccc",
+    marginTop: 20,
   },
   headerText: {
     fontSize: 18,
@@ -117,40 +144,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginRight: 30,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    height: 60,
-    borderBottomWidth: 0.3,
-    borderBottomColor: '#ccc',
-    marginTop: 20,
-  },
-  backButton: {
-    marginRight: 10,
-  },
-  arrow: {
-    width: 18,
-    height: 18,
-    resizeMode: 'contain',
-  },
-  
   scrollView: {
     paddingVertical: 10,
   },
   notificationCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FFF',
+    flexDirection: "row",
+    backgroundColor: "#FFF",
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
   iconContainer: {
     marginRight: 10,
   },
   iconBackground: {
-    backgroundColor: '#F2E6E8',
+    backgroundColor: "#F2E6E8",
     borderRadius: 50,
     padding: 10,
   },
@@ -159,12 +167,17 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: 14.5,
-    color: '#111111',
+    color: "#111",
     marginBottom: 5,
   },
   timeText: {
     fontSize: 12,
-    color: '#888888',
+    color: "#888",
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#888",
+    marginTop: 20,
   },
   unreadText: {
     fontWeight: "700",

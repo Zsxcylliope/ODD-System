@@ -1,10 +1,36 @@
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../lib/api';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
+
 
 const AddressSelection = () => {
   const router = useRouter();
+
+  const [addresses, setAddresses] = useState<any[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchAddresses();
+    }, [])
+  );
+
+  const fetchAddresses = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+
+      const res = await api.get("/addresses", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setAddresses(res.data);
+    } catch (error) {
+      console.log("Error fetching addresses:", error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -19,36 +45,38 @@ const AddressSelection = () => {
       <ScrollView contentContainerStyle={styles.scrollView}>
         <Text style={styles.sectionTitle}>Addresses</Text>
 
-        {/* ADDRESS CARD */}
-        <View style={styles.addressCard}>
-          <View style={styles.addressHeader}>
-            <View style={styles.addressLeft}>
-              <Text style={styles.addressName}>Zumaan</Text>
+        {addresses.map((item) => (
+          <View key={item._id} style={styles.addressCard}>
+            <View style={styles.addressHeader}>
+              <View style={styles.addressLeft}>
+                <Text style={styles.addressName}>{item.fullname}</Text>
+              </View>
+              <TouchableOpacity onPress={() => router.push({ pathname: "/address/edit", params: { id: item._id } })}>
+                <Text style={styles.editText}>EDIT</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity>
-              <Text style={styles.editText}>EDIT</Text>
-            </TouchableOpacity>
-          </View>
 
-          <Text style={styles.phoneText}>(+63) 999 3120 355</Text>
-          <Text style={styles.addressText}>
-            Zone 2b Mabunay Compound{"\n"}
-            Pagatpat, Cagayan De Oro City, Misamis Oriental,{"\n"}
-            Mindanao, 9000
-          </Text>
+            <Text style={styles.phoneText}>(+63) {item.phone}</Text>
+            <Text style={styles.addressText}>
+              {item.street}, {item.barangay}{"\n"}
+              {item.city}, {item.province}, {item.region}
+            </Text>
 
-          <View style={styles.addressFooter}>
-            <TouchableOpacity style={styles.defaultTag}>
-              <Text style={styles.defaultText}>Default</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteButton}>
-              <Text style={styles.deleteText}>Delete</Text>
-            </TouchableOpacity>
+            <View style={styles.addressFooter}>
+              {item.isDefault ? (
+                <TouchableOpacity style={styles.defaultTag}>
+                  <Text style={styles.defaultText}>Default</Text>
+                </TouchableOpacity>
+              ) : (
+                <View />
+              )}
+              {/* Assuming we might want delete functionality here too, but sticking to UI provided */}
+            </View>
           </View>
-        </View>
+        ))}
 
         {/* ADD NEW ADDRESS BUTTON */}
-        <TouchableOpacity style={styles.newAddressButton}>
+        <TouchableOpacity style={styles.newAddressButton} onPress={() => router.push("/address/edit")}>
           <Ionicons name="add-circle-outline" size={22} color="#A02334" />
           <Text style={styles.newAddressText}>ADD A NEW ADDRESS</Text>
         </TouchableOpacity>
@@ -181,4 +209,3 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
 });
- 

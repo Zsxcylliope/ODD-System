@@ -13,9 +13,12 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../lib/api";
+import api from "../lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import ProductCard from "./productcard";
 import Navbar from "./navbar";
+
 
 type Product = {
   _id: string;
@@ -38,6 +41,7 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
+      const res = await api.get("/products/top");
       const res = await api.get("/products/top");
       setProducts(res.data);
     } catch (error) {
@@ -269,6 +273,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 5,
   },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: 12,
+    backgroundColor: "#EE002D",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+},
 });
 
 export default Home;
