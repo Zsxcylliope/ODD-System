@@ -10,29 +10,29 @@ router.post("/", authMiddleware, async (req, res) => {
   try {
     const { items, subtotal, deliveryFee, total, paymentMethod } = req.body;
 
-  const order = await Order.create({
-    userId: req.user.id, // ✅ authoritative source
-    items,
-    subtotal,
-    deliveryFee,
-    total,
-    paymentMethod,
-    status: "to_receive",
-  });
+    const order = await Order.create({
+      userId: req.user.userId, // ✅ authoritative source
+      items,
+      subtotal,
+      deliveryFee,
+      total,
+      paymentMethod,
+      status: "to_receive",
+    });
 
-  // Create a notification for the new order
-  await Notification.create({
-    userId: req.user.id,
-    title: "Order Confirmed",
-    message: `Your order #${order._id
+    // Create a notification for the new order
+    await Notification.create({
+      userId: req.user.userId,
+      title: "Order Confirmed",
+      message: `Your order #${order._id
         .toString()
         .slice(-6)
         .toUpperCase()} has been confirmed.`,
       relatedOrder: order._id,
     });
 
-  res.status(201).json(order);
-} catch (err) {
+    res.status(201).json(order);
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -40,7 +40,7 @@ router.post("/", authMiddleware, async (req, res) => {
 // GET USER ORDERS
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user.id })
+    const orders = await Order.find({ userId: req.user.userId })
       .sort({ createdAt: -1 });
 
     res.json(orders);
@@ -52,7 +52,7 @@ router.get("/", authMiddleware, async (req, res) => {
 router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     const order = await Order.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
+      { _id: req.params.id, userId: req.user.userId },
       { status: req.body.status },
       { new: true }
     );

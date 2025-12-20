@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const notifications = await Notification.find({
-      userId: req.user.id,
+      userId: req.user.userId,
     }).sort({ createdAt: -1 });
 
     res.json(notifications);
@@ -21,7 +21,7 @@ router.get("/", authMiddleware, async (req, res) => {
 router.get("/unread/count", authMiddleware, async (req, res) => {
   try {
     const count = await Notification.countDocuments({
-      userId: req.user.id,
+      userId: req.user.userId,
       isRead: false,
     });
 
@@ -35,7 +35,7 @@ router.get("/unread/count", authMiddleware, async (req, res) => {
 router.patch("/read-all", authMiddleware, async (req, res) => {
   try {
     await Notification.updateMany(
-      { userId: req.user.id, isRead: false },
+      { userId: req.user.userId, isRead: false },
       { isRead: true }
     );
 

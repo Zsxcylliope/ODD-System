@@ -6,29 +6,70 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
+  Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useCart } from "../lib/CartContext";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-const API_BASE_URL = "http://192.168.1.13:3000/api";
-
+import api from "../lib/api";
 
 const Checkout = () => {
   const router = useRouter();
+  const { addressId } = useLocalSearchParams();
   const { cart, clearSelected } = useCart();
 
   const [selectedPayment, setSelectedPayment] = useState("Gcash");
+  const [address, setAddress] = useState<any>(null);
+
+  useEffect(() => {
+    fetchAddress();
+  }, [addressId]);
+
+  const fetchAddress = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+
+      const res = await api.get("/addresses", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      let targetAddress;
+
+      if (addressId) {
+        targetAddress = res.data.find((a: any) => a._id === addressId);
+      }
+
+      // If no specific address selected, or not found, use default
+      if (!targetAddress) {
+        targetAddress = res.data.find((a: any) => a.isDefault);
+      }
+
+      // If still no default, just take the first one
+      if (!targetAddress && res.data.length > 0) {
+        targetAddress = res.data[0];
+      }
+
+      setAddress(targetAddress);
+    } catch (error) {
+      console.log("Error fetching address:", error);
+    }
+  };
 
   const handleAddress = () => {
-    router.push("/addressselection");
+    router.push("/address?select=true");
   };
 
   const handleConfirmOrder = async () => {
     if (products.length === 0) return;
+
+    if (!address) {
+      Alert.alert("Missing Address", "Please select a delivery address.");
+      return;
+    }
 
     try {
       const token = await AsyncStorage.getItem("token");
@@ -37,10 +78,10 @@ const Checkout = () => {
         return;
       }
 
-      await axios.post(
-        `${API_BASE_URL}/orders`,
+      await api.post(
+        "/orders",
         {
-          items: products.map(item => ({
+          items: products.map((item) => ({
             productId: item._id,
             name: item.name,
             image: item.image,
@@ -51,6 +92,7 @@ const Checkout = () => {
           deliveryFee,
           total,
           paymentMethod: selectedPayment,
+          shippingAddress: address, // Optional: send snapshot of address
         },
         {
           headers: {
@@ -59,13 +101,13 @@ const Checkout = () => {
         }
       );
 
-      clearSelected();              // ✅ works now
-      router.replace("/moreceive"); // ✅ works now
+      clearSelected();
+      router.replace("/moreceive");
     } catch (err) {
       console.log("Checkout error:", err);
+      Alert.alert("Error", "Failed to place order");
     }
   };
-
 
   // ✅ ONLY SELECTED ITEMS
   const products = cart.filter((item) => item.selected);
@@ -81,8 +123,16 @@ const Checkout = () => {
   const payments = [
     { id: "Gcash", label: "Gcash", icon: require("../assets/images/gcash.jpg") },
     { id: "Paypal", label: "Paypal", icon: require("../assets/images/paypal.png") },
-    { id: "GooglePay", label: "Google pay", icon: require("../assets/images/gpay.png") },
-    { id: "COD", label: "Cash on delivery", icon: require("../assets/images/wallets.png") },
+    {
+      id: "GooglePay",
+      label: "Google pay",
+      icon: require("../assets/images/gpay.png"),
+    },
+    {
+      id: "COD",
+      label: "Cash on delivery",
+      icon: require("../assets/images/wallets.png"),
+    },
   ];
 
   return (
@@ -100,15 +150,27 @@ const Checkout = () => {
         <View style={styles.addressContainer}>
           <Ionicons name="location-outline" size={22} color="#A02334" />
           <View style={{ flex: 1, marginLeft: 8 }}>
-            <Text style={styles.deliveryName}>Zumaan (+63) 999 3120 355</Text>
-            <Text style={styles.addressText}>
-              Zone 2b Mabunay Compound{"\n"}
-              Pagatpat, Cagayan De Oro City, Misamis Oriental,{"\n"}
-              Mindanao, 9000
-            </Text>
+            {address ? (
+              <>
+                <Text style={styles.deliveryName}>
+                  {address.fullname} ({address.phone})
+                </Text>
+                <Text style={styles.addressText}>
+                  {address.street}, {address.barangay}
+                  {"\n"}
+                  {address.city}, {address.province}, {address.region}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.deliveryName}>No address selected</Text>
+            )}
           </View>
           <TouchableOpacity onPress={handleAddress} style={styles.addressbtn}>
-            <Ionicons name="chevron-forward-outline" size={18} color="#A02334" />
+            <Ionicons
+              name="chevron-forward-outline"
+              size={18}
+              color="#A02334"
+            />
           </TouchableOpacity>
         </View>
 
@@ -120,9 +182,7 @@ const Checkout = () => {
               <Text style={styles.productName}>{item.name}</Text>
               <Text style={styles.inStock}>IN STOCK</Text>
               <Text style={styles.productPrice}>₱{item.price}</Text>
-              <Text style={styles.productQty}>
-                Quantity: {item.quantity}x
-              </Text>
+              <Text style={styles.productQty}>Quantity: {item.quantity}x</Text>
             </View>
           </View>
         ))}
@@ -235,7 +295,12 @@ const styles = StyleSheet.create({
     paddingLeft: 150,
   },
 
-  sectionTitle: { fontWeight: "600", fontSize: 15, marginBottom: 23, marginTop: 15 },
+  sectionTitle: {
+    fontWeight: "600",
+    fontSize: 15,
+    marginBottom: 23,
+    marginTop: 15,
+  },
 
   paymentContainer: {
     backgroundColor: "#fff",
@@ -253,7 +318,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: "#eee",
   },
-  paymentIcon: { width: 26, height: 26, resizeMode: "contain", marginRight: 10 },
+  paymentIcon: {
+    width: 26,
+    height: 26,
+    resizeMode: "contain",
+    marginRight: 10,
+  },
   paymentText: { flex: 1, fontSize: 14, color: "#111" },
 
   radioOuter: {
@@ -266,11 +336,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   radioSelected: { borderColor: "#A02334" },
-  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#A02334" },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#A02334",
+  },
 
   totalContainer: { marginBottom: 16 },
-  totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
-  totalRowFinal: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+  },
+  totalRowFinal: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+  },
 
   totalLabel: { color: "#555" },
   totalValue: { color: "#000", fontWeight: "500" },

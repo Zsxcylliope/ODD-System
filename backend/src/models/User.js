@@ -21,19 +21,41 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    // OPTIONAL — filled via profile edit modal
+    region: {
+      type: String,
+      default: "",
+    },
+
+    province: {
+      type: String,
+      default: "",
+    },
+
+    city: {
+      type: String,
+      default: "",
+    },
+
+    // ENFORCE PROFILE COMPLETION
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
+
     password: {
       type: String,
       required: true,
       minlength: 6,
     },
 
-    // ✅ AUTO-GENERATED USER ID
+    // AUTO-GENERATED USER ID
     userCode: {
       type: String,
       unique: true,
     },
 
-    // ✅ DiceBear avatar (default)
+    // DiceBear avatar (default)
     profileImage: {
       type: String,
     },
@@ -49,7 +71,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password + generate ID + avatar
+// ================= PRE-SAVE HOOK =================
 userSchema.pre("save", async function (next) {
   // Generate userCode ONCE
   if (!this.userCode) {
@@ -58,7 +80,7 @@ userSchema.pre("save", async function (next) {
     ).toString();
   }
 
-  // Set DiceBear avatar if none provided
+  // Default avatar
   if (!this.profileImage) {
     this.profileImage = `https://api.dicebear.com/7.x/avataaars/png?seed=${this.email}`;
   }
@@ -71,7 +93,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Compare password for login
+// ================= METHODS =================
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };

@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["*"],
 }));
 
 app.use("/api/auth", authRoutes);
