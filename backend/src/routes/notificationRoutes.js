@@ -6,7 +6,7 @@ const router = express.Router();
 
 /* GET ALL NOTIFICATIONS */
 router.get("/", authMiddleware, async (req, res) => {
-  const notifications = await Notification.find({ userId: req.user.id })
+  const notifications = await Notification.find({ userId: req.user.userId })
     .sort({ createdAt: -1 });
 
   res.json(notifications);
@@ -15,7 +15,7 @@ router.get("/", authMiddleware, async (req, res) => {
 /* MARK AS READ */
 router.patch("/:id/read", authMiddleware, async (req, res) => {
   await Notification.findOneAndUpdate(
-    { _id: req.params.id, userId: req.user.id },
+    { _id: req.params.id, userId: req.user.userId },
     { isRead: true }
   );
 
@@ -25,7 +25,7 @@ router.patch("/:id/read", authMiddleware, async (req, res) => {
 /* UNREAD COUNT (for red dot) */
 router.get("/unread/count", authMiddleware, async (req, res) => {
   const count = await Notification.countDocuments({
-    userId: req.user.id,
+    userId: req.user.userId,
     isRead: false,
   });
 

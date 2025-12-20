@@ -80,8 +80,6 @@ const Checkout = () => {
 
       await api.post(
         "/orders",
-      await api.post(
-        "/orders",
         {
           items: products.map((item) => ({
             productId: item._id,

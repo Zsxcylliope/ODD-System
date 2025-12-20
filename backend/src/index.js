@@ -5,10 +5,8 @@ import authRoutes from "./routes/authRoutes.js";
 import cors from "cors";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-import notificationRoutes from "./routes/notificationRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import addressRoutes from "./routes/addressRoutes.js";
-
 import notificationRoutes from "./routes/notificationRoutes.js";
 
 const app = express();

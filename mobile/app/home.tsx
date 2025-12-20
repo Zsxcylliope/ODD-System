@@ -13,8 +13,6 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../lib/api";
-import api from "../lib/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import ProductCard from "./productcard";
 import Navbar from "./navbar";
@@ -41,7 +39,6 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get("/products/top");
       const res = await api.get("/products/top");
       setProducts(res.data);
     } catch (error) {
