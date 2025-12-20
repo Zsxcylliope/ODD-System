@@ -1,6 +1,8 @@
 import express from "express";
 import Order from "../models/Order.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import Notification from "../models/Notification.js";
+
 
 const router = express.Router();
 
@@ -17,6 +19,13 @@ router.post("/", authMiddleware, async (req, res) => {
     total,
     paymentMethod,
     status: "to_receive",
+  });
+
+  await Notification.create({
+    userId: req.user.id,
+    orderId: order._id,
+    type: "order_confirmed",
+    message: `Your order #${order._id} has been confirmed.`,
   });
 
   res.status(201).json(order);
@@ -45,6 +54,24 @@ router.patch("/:id", authMiddleware, async (req, res) => {
       { new: true }
     );
 
+    if (req.body.status === "completed") {
+      await Notification.create({
+        userId: req.user.id,
+        orderId: order._id,
+        type: "order_received",
+        message: `Order #${order._id} has been received.`,
+      });
+    }
+
+    if (req.body.status === "cancelled") {
+      await Notification.create({
+        userId: req.user.id,
+        orderId: order._id,
+        type: "order_cancelled",
+        message: `Order #${order._id} has been cancelled.`,
+      });
+    }
+    
     res.json(order);
   } catch (err) {
     res.status(500).json({ message: err.message });

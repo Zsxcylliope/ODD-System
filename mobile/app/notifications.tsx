@@ -1,53 +1,74 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native'
-import React from 'react'
-import { Ionicons } from '@expo/vector-icons'
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+
+const API_BASE_URL = "http://192.168.100.11:3000/api";
+
+const timeAgo = (date: string) => {
+  const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+};
 
 const Notifications = () => {
   const router = useRouter();
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  const trackingNumber = [
-    { id: 1, tracking: "123-TYU", time: "1h ago" },
-    { id: 2, tracking: "KG6-WY", time: "1h ago" },
-    { id: 3, tracking: "SAN-O1L", time: "1h ago" },
-    { id: 4, tracking: "GHE-L1N", time: "1h ago" },
-    { id: 5, tracking: "BCV-TY3", time: "1h ago" },
-    { id: 6, tracking: "2AC-ZBA", time: "1h ago" }, 
-    { id: 7, tracking: "GFH-12F", time: "1h ago" },
-    { id: 8, tracking: "KG6-7E", time: "1h ago" },
-    { id: 9, tracking: "3VC-F12", time: "1h ago" },
-  ];
+  const loadNotifications = async () => {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return;
+
+    const res = await axios.get(`${API_BASE_URL}/notifications`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setNotifications(res.data);
+  };
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 5000); // 🔥 REAL-TIME
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back-outline" size={20}/>
+        <TouchableOpacity onPress={() => router.replace("/home")} style={styles.backButton}>
+          <Ionicons name="chevron-back-outline" size={20} />
         </TouchableOpacity>
         <Text style={styles.headerText}>Notifications</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        {trackingNumber.map((item) => (
-          <View key={item.id} style={styles.notificationCard}>
-            <View style={styles.iconContainer}>
-              <View style={styles.iconBackground}>
-                <Ionicons name="bag-handle-outline" size={28} color="#A02334" />
-              </View>
+      <ScrollView>
+        {notifications.map((n) => (
+          <View key={n._id} style={styles.notificationCard}>
+            <View style={styles.iconBackground}>
+              <Ionicons name="bag-handle-outline" size={26} color="#A02334" />
             </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.notificationText}>
-                Your order #{item.tracking} has been confirmed!{"\n"}
-                We'll notify you once it's ready for dispatch.
-              </Text>
-              <Text style={styles.timeText}>{item.time}</Text>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.notificationText}>{n.message}</Text>
+              <Text style={styles.timeText}>{timeAgo(n.createdAt)}</Text>
             </View>
           </View>
         ))}
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

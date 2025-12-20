@@ -161,7 +161,7 @@ import api from "../lib/api";
     registertext:{
         color:'white',
     },
-    signupCLuster:{
+    signupCluster:{
         justifyContent:'center',
         alignItems:'center',
         marginTop:70,
